@@ -61,7 +61,7 @@ export const MagicBallMaterial = shaderMaterial(
     uEmergeProgress: 0,
     uShakeIntensity: 0,
     uTextTexture: new THREE.Texture(),
-    uTextColor: new THREE.Color('#e8fbff'),
+    uTextColor: new THREE.Color('#1e5f99'),
   },
   ballVertexShader,
   ballFragmentShader
@@ -75,7 +75,7 @@ export const TextBillboardMaterial = shaderMaterial(
     uTime: 0,
     uEmergeProgress: 0,
     uTextTexture: new THREE.Texture(),
-    uTextColor: new THREE.Color('#e8fbff'),
+    uTextColor: new THREE.Color('#1e5f99'),
   },
   textVertexShader,
   textFragmentShader
@@ -186,7 +186,8 @@ export default function MagicBall() {
         textMatRef.current.uTime = time;
         textMatRef.current.uEmergeProgress = materialRef.current.uEmergeProgress;
         textMatRef.current.uTextTexture = textTexture;
-        textMatRef.current.uTextColor = new THREE.Color('#f2f7ff');
+        // Choose a darker color for better contrast against the bright specular
+        textMatRef.current.uTextColor = new THREE.Color('#0f172a');
       }
     }
   });

@@ -25,7 +25,9 @@ float fbm(vec2 p) {
   float v = 0.0;
   float a = 0.5;
   mat2 m = mat2(1.6, 1.2, -1.2, 1.6);
-  for (int i = 0; i < 5; i++) {
+  // --- ENHANCEMENT: More detailed noise ---
+  // Increased loop from 5 to 6 octaves for a higher-fidelity wave motion.
+  for (int i = 0; i < 6; i++) {
     v += a * noise(p);
     p = m * p + 0.5;
     a *= 0.5;
@@ -37,7 +39,7 @@ void main() {
   vUv = uv;
 
   // Subtle vertical undulation like being under waves
-  float t = uTime * 0.6;
+  float t = uTime * 0.5; // Slightly slowed down time for a more majestic feel
   float n = fbm(uv * 3.0 + vec2(0.0, -t));
   vWave = n;
 
@@ -46,5 +48,3 @@ void main() {
 
   gl_Position = projectionMatrix * modelViewMatrix * vec4(pos, 1.0);
 }
-
-
