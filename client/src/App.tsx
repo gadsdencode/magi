@@ -255,18 +255,18 @@ function MagicBall() {
         />
       </Sphere>
       
-      {/* Response Text - positioned away from ball surface */}
+      {/* Response Text - positioned on ball surface */}
       {response && (
         <Text
-          position={[0, -2.5, 0]}
-          fontSize={0.15}
-          color="#00D9FF"
+          position={[0, 0, 1.52]}
+          fontSize={0.12}
+          color="#FFFFFF"
           anchorX="center"
           anchorY="middle"
-          maxWidth={3}
+          maxWidth={1.2}
           textAlign="center"
           fillOpacity={textOpacity}
-          strokeWidth={0.006}
+          strokeWidth={0.003}
           strokeColor="#000000"
           fontWeight="bold"
         >
