@@ -221,20 +221,7 @@ function MagicBall() {
       }
     }
 
-    // Dynamic window glow based on state
-    if (windowRef.current) {
-      const material = windowRef.current.material as THREE.MeshPhysicalMaterial;
-      if (isShaking) {
-        material.emissive.setHex(0x003366);
-        material.emissiveIntensity = 0.3 + Math.sin(time * 20) * 0.2;
-      } else if (response) {
-        material.emissive.setHex(0x001122);
-        material.emissiveIntensity = 0.1 + Math.sin(time * 2) * 0.05;
-      } else {
-        material.emissive.setHex(0x000000);
-        material.emissiveIntensity = 0;
-      }
-    }
+    // Window glow removed since window circle is completely eliminated
   });
 
   return (
@@ -268,25 +255,7 @@ function MagicBall() {
         />
       </Sphere>
       
-      {/* Vision Window */}
-      <mesh
-        ref={windowRef}
-        position={[0, 0, 1.42]}
-        rotation={[0, 0, 0]}
-      >
-        <circleGeometry args={[0.65, 64]} />
-        <meshPhysicalMaterial
-          color={0x112244}
-          transparent
-          opacity={0.3}
-          metalness={0.1}
-          roughness={0.8}
-          clearcoat={0.2}
-          clearcoatRoughness={0.3}
-          emissive={0x001122}
-          emissiveIntensity={0.2}
-        />
-      </mesh>
+      {/* NO WINDOW CIRCLE - COMPLETELY REMOVED TO ELIMINATE BLACK CIRCLE */}
       
       {/* Curved Response Text following ball surface */}
       {response && (
