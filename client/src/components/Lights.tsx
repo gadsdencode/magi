@@ -1,28 +1,46 @@
 import { useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
+import { useMagicBall } from '../lib/stores/useMagicBall';
 
 export default function Lights() {
   const pointLightRef = useRef<THREE.PointLight>(null);
   const spotLightRef = useRef<THREE.SpotLight>(null);
+  const { isLoading, isShaking } = useMagicBall();
 
   // Animate lights for mystical effect
   useFrame((state) => {
     const time = state.clock.elapsedTime;
     
     if (pointLightRef.current) {
-      // Pulsing intensity
-      pointLightRef.current.intensity = 0.5 + Math.sin(time * 2) * 0.2;
+      // Pulsing intensity: when loading, use erratic chaotic formula
+      if (isLoading) {
+        pointLightRef.current.intensity = 1.5 + Math.sin(time * 5) * 0.4 + Math.sin(time * 7.3) * 0.2;
+      } else if (isShaking) {
+        // Intense pulsing during shake
+        pointLightRef.current.intensity = 1.2 + Math.sin(time * 8) * 0.6;
+      } else {
+        const baseIntensity = 0.6;
+        pointLightRef.current.intensity = baseIntensity + Math.sin(time * 2.0) * 0.2;
+      }
       
-      // Orbital movement
+      // Orbital movement - faster when loading
       const radius = 5;
-      pointLightRef.current.position.x = Math.cos(time * 0.5) * radius;
-      pointLightRef.current.position.z = Math.sin(time * 0.5) * radius;
+      const speed = isLoading ? 1.2 : 0.5;
+      pointLightRef.current.position.x = Math.cos(time * speed) * radius;
+      pointLightRef.current.position.z = Math.sin(time * speed) * radius;
     }
     
     if (spotLightRef.current) {
-      // Gentle swaying
-      spotLightRef.current.position.x = Math.sin(time * 0.3) * 2;
+      // More dramatic swaying when loading or shaking
+      const swayIntensity = isLoading ? 3 : isShaking ? 2 : 1;
+      const swaySpeed = isLoading ? 0.8 : isShaking ? 0.6 : 0.3;
+      spotLightRef.current.position.x = Math.sin(time * swaySpeed) * 2 * swayIntensity;
+      
+      // Add intensity variation during loading
+      if (isLoading) {
+        spotLightRef.current.intensity = 1.1 + Math.sin(time * 3.5) * 0.3;
+      }
     }
   });
 

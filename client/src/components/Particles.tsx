@@ -1,6 +1,7 @@
 import { useRef, useMemo } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
+import { useMagicBall } from '../lib/stores/useMagicBall';
 
 interface ParticlesProps {
   isActive: boolean;
@@ -9,6 +10,7 @@ interface ParticlesProps {
 export default function Particles({ isActive }: ParticlesProps) {
   const meshRef = useRef<THREE.Points>(null);
   const materialRef = useRef<THREE.PointsMaterial>(null);
+  const { isLoading, isShaking } = useMagicBall();
 
   // Soft circular sprite texture (avoids hard-edged squares)
   const circleTexture = useMemo(() => {
@@ -62,7 +64,7 @@ export default function Particles({ isActive }: ParticlesProps) {
     return [positions, colors];
   }, []);
 
-  // Animation (very subtle to avoid motion sickness)
+  // Animation (intensifies when the oracle is "thinking")
   useFrame((state) => {
     if (!meshRef.current || !isActive) return;
 
@@ -75,17 +77,79 @@ export default function Particles({ isActive }: ParticlesProps) {
       const y = p[i + 1];
       const z = p[i + 2];
       const radius = Math.sqrt(x * x + z * z);
-      const angle = Math.atan2(z, x) + time * 0.06; // slower
-      p[i] = radius * Math.cos(angle);
-      p[i + 2] = radius * Math.sin(angle);
-      p[i + 1] = y + Math.sin(time * 0.8 + i) * 0.02;
+      
+      // Create swirling vortex effect when oracle is thinking
+      let baseSpeed = 0.06;
+      let vortexIntensity = 0;
+      
+      if (isLoading) {
+        baseSpeed = 0.18; // 3x faster
+        vortexIntensity = 0.025; // Strong vortex
+      } else if (isShaking) {
+        baseSpeed = 0.12; // 2x faster
+        vortexIntensity = 0.015; // Moderate vortex
+      }
+      
+      const angle = Math.atan2(z, x) + time * baseSpeed;
+      
+      // Add vortex spiral effect
+      if (vortexIntensity > 0) {
+        const spiralOffset = Math.sin(time * 2.5 + i * 0.1) * vortexIntensity;
+        p[i] = (radius + spiralOffset) * Math.cos(angle);
+        p[i + 2] = (radius + spiralOffset) * Math.sin(angle);
+      } else {
+        p[i] = radius * Math.cos(angle);
+        p[i + 2] = radius * Math.sin(angle);
+      }
+      
+      // Enhanced vertical movement for vortex effect
+      const bobAmplitude = isLoading ? 0.08 : isShaking ? 0.05 : 0.02;
+      const bobSpeed = isLoading ? 1.2 : 0.8;
+      p[i + 1] = y + Math.sin(time * bobSpeed + i * 0.1) * bobAmplitude;
     }
 
     positionAttribute.needsUpdate = true;
-    meshRef.current.rotation.y = time * 0.03;
+    // Enhanced rotation for vortex effect
+    const rotationSpeed = isLoading ? 0.15 : isShaking ? 0.08 : 0.03;
+    meshRef.current.rotation.y = time * rotationSpeed;
+    
+    // Add slight tilt during loading for more dynamic vortex
+    if (isLoading) {
+      meshRef.current.rotation.x = Math.sin(time * 0.5) * 0.1;
+      meshRef.current.rotation.z = Math.cos(time * 0.3) * 0.05;
+    } else {
+      meshRef.current.rotation.x = 0;
+      meshRef.current.rotation.z = 0;
+    }
 
     if (materialRef.current) {
-      materialRef.current.opacity = 0.18 + Math.sin(time * 1.5) * 0.06;
+      // Enhanced pulsing and effects based on state
+      let pulseSpeed = 1.5;
+      let opacityMultiplier = 0.06;
+      let sizeMultiplier = 0;
+      let colorShift = 0;
+      
+      if (isLoading) {
+        pulseSpeed = 4.0;
+        opacityMultiplier = 0.28;
+        sizeMultiplier = 0.03;
+        colorShift = 0.08;
+      } else if (isShaking) {
+        pulseSpeed = 2.5;
+        opacityMultiplier = 0.15;
+        sizeMultiplier = 0.015;
+        colorShift = 0.04;
+      }
+      
+      const pulse = 0.5 + 0.5 * Math.sin(time * pulseSpeed);
+      materialRef.current.opacity = 0.12 + pulse * opacityMultiplier;
+      materialRef.current.size = 0.08 + sizeMultiplier * Math.sin(time * 2.0);
+      
+      // Dynamic color shifting for mystical effect
+      const hue = 0.55 + colorShift * Math.sin(time * 0.7);
+      const sat = isLoading ? 1.0 : isShaking ? 0.9 : 0.8;
+      const light = isLoading ? 0.75 : isShaking ? 0.65 : 0.55;
+      materialRef.current.color.setHSL(hue, sat, light);
     }
   });
 

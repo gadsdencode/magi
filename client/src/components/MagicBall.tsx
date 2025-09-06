@@ -4,6 +4,7 @@ import { useKeyboardControls, Text, useTexture, Sphere } from '@react-three/drei
 import * as THREE from 'three';
 import { useMagicBall } from '../lib/stores/useMagicBall';
 import { useAudio } from '../lib/stores/useAudio';
+import { gsap } from 'gsap';
 
 export default function MagicBall() {
   const meshRef = useRef<THREE.Mesh>(null);
@@ -18,6 +19,7 @@ export default function MagicBall() {
   const triangleTextRef = useRef<any>(null);
   const emergeProgressRef = useRef<number>(0);
   const [emergeProgress, setEmergeProgress] = useState(0);
+  const [textOpacity, setTextOpacity] = useState(0);
   
   const { 
     isShaking, 
@@ -121,15 +123,37 @@ export default function MagicBall() {
     setAngularVelocity(newAngularVelocity);
     setShakeIntensity(1);
     
+    // Reset emergence progress for dramatic reveal
+    emergeProgressRef.current = 0;
+    setEmergeProgress(0);
+    setTextOpacity(0);
+    
     // Fetch AI response
-    // Drive a short "sink then emerge" cycle for authenticity
-    emergeProgressRef.current = 0; setEmergeProgress(0);
     setTimeout(async () => {
       await fetchResponse();
       // brief delay as if the die flips
       setTimeout(() => {
         stopShake();
         playSuccess();
+        
+        // Start dramatic emergence animation
+        gsap.to(emergeProgressRef, {
+          current: 1,
+          duration: 1.5,
+          ease: "power2.out",
+          onUpdate: function() {
+            setEmergeProgress(emergeProgressRef.current);
+          }
+        });
+        
+        // Simultaneous text fade-in
+        gsap.to({}, {
+          duration: 1.5,
+          ease: "power2.out",
+          onUpdate: function() {
+            setTextOpacity(this.progress());
+          }
+        });
       }, 150);
       
       // Gradually stop the shaking
@@ -216,25 +240,31 @@ export default function MagicBall() {
     }
 
     // Water-emergence animation for the window triangle
-    const target = response && !isLoading ? 1 : 0;
-    emergeProgressRef.current = THREE.MathUtils.lerp(emergeProgressRef.current, target, delta * 2.2);
-    if (Math.abs(emergeProgress - emergeProgressRef.current) > 0.001) {
-      setEmergeProgress(emergeProgressRef.current);
-    }
-
     if (windowGroupRef.current && triangleRef.current) {
       const p = emergeProgressRef.current;
       // Triangle emerges from inside the ball towards the glass
       const startZ = 1.35; // deeper inside
-      const endZ = 1.49;   // just behind glass circle (and just under text)
+      const endZ = 1.515;  // just behind glass circle (and just under text)
       triangleRef.current.position.z = THREE.MathUtils.lerp(startZ, endZ, p);
       triangleRef.current.rotation.z = Math.sin(state.clock.elapsedTime * 0.6) * 0.02 * (1 - p); // tiny drift while deep
       triangleRef.current.scale.setScalar(0.95 + p * 0.08);
-      if (triangleTextRef.current) {
-        triangleTextRef.current.material.opacity = 0.1 + p * 0.9;
+      
+      // Add subtle rotation during emergence for more dramatic effect
+      if (p > 0 && p < 1) {
+        triangleRef.current.rotation.y += delta * 0.5 * p;
       }
     }
   });
+
+  // Reset text opacity when response changes
+  useEffect(() => {
+    if (!response || isLoading) {
+      setTextOpacity(0);
+    }
+  }, [response, isLoading]);
+
+  // Shared Z position for text and background plane
+  const textZ = THREE.MathUtils.lerp(1.4, 1.515, emergeProgress);
 
   return (
     <group ref={groupRef} position={[0, 0, 0]}>
@@ -292,27 +322,34 @@ export default function MagicBall() {
         </mesh>
         {/* Text rendered slightly above the triangle */}
         {response && (
-          <Text
-            ref={triangleTextRef}
-            position={[0, textYOffset, THREE.MathUtils.lerp(1.4, 1.515, emergeProgress)]}
-            fontSize={textFontSize}
-            color="#e8fbff"
-            anchorX="center"
-            anchorY="middle"
-            maxWidth={textMaxWidth}
-            textAlign="center"
-            letterSpacing={textLetterSpacing}
-            lineHeight={1.1}
-            fillOpacity={0.15 + 0.85 * emergeProgress}
-            outlineWidth={0.004}
-            outlineColor="#00121d"
-            renderOrder={20}
-            material-depthTest={false}
-            material-depthWrite={false}
-            material-toneMapped={false}
-          >
-            {response?.toUpperCase()}
-          </Text>
+          <>
+            {/* Background plane for readability */}
+            <mesh position={[0, textYOffset, textZ - 0.005]} renderOrder={19}>
+              <planeGeometry args={[0.9, 0.6]} />
+              <meshStandardMaterial color={"black"} transparent opacity={0.4} depthWrite={false} depthTest={false} />
+            </mesh>
+            <Text
+              ref={triangleTextRef}
+              position={[0, textYOffset, textZ]}
+              fontSize={textFontSize}
+              color="#e8fbff"
+              anchorX="center"
+              anchorY="middle"
+              maxWidth={textMaxWidth}
+              textAlign="center"
+              letterSpacing={textLetterSpacing}
+              lineHeight={1.1}
+              fillOpacity={textOpacity}
+              outlineWidth={0.004}
+              outlineColor="#00121d"
+              renderOrder={20}
+              material-depthTest={false}
+              material-depthWrite={false}
+              material-toneMapped={false}
+            >
+              {response?.toUpperCase()}
+            </Text>
+          </>
         )}
       </group>
       
