@@ -8,6 +8,8 @@ const __dirname = dirname(__filename);
 import { type Server } from "http";
 import viteConfig from "../vite.config";
 import { nanoid } from "nanoid";
+import dotenv from "dotenv";
+dotenv.config();
 
 const viteLogger = createLogger();
 

@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect } from 'react';
+import { useRef, useState, useEffect, useMemo } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
 import { useKeyboardControls, Text, useTexture, Sphere } from '@react-three/drei';
 import * as THREE from 'three';
@@ -18,7 +18,6 @@ export default function MagicBall() {
   const triangleTextRef = useRef<any>(null);
   const emergeProgressRef = useRef<number>(0);
   const [emergeProgress, setEmergeProgress] = useState(0);
-  const [subscribe, get] = useKeyboardControls();
   
   const { 
     isShaking, 
@@ -29,6 +28,22 @@ export default function MagicBall() {
     fetchResponse,
     resetBall 
   } = useMagicBall();
+
+  // Dynamic text layout based on response length so it fits the window neatly
+  const { textFontSize, textMaxWidth, textLetterSpacing, textYOffset } = useMemo(() => {
+    const length = (response ?? '').length;
+    if (length <= 18) {
+      return { textFontSize: 0.14, textMaxWidth: 0.68, textLetterSpacing: 0.01, textYOffset: -0.02 };
+    }
+    if (length <= 40) {
+      return { textFontSize: 0.12, textMaxWidth: 0.7, textLetterSpacing: 0.008, textYOffset: -0.02 };
+    }
+    if (length <= 70) {
+      return { textFontSize: 0.1, textMaxWidth: 0.72, textLetterSpacing: 0.006, textYOffset: -0.018 };
+    }
+    return { textFontSize: 0.085, textMaxWidth: 0.74, textLetterSpacing: 0.004, textYOffset: -0.016 };
+  }, [response]);
+  const [subscribe, get] = useKeyboardControls();
   
   const { playHit, playSuccess } = useAudio();
   
@@ -244,8 +259,8 @@ export default function MagicBall() {
         </mesh>
         {/* Subtle glow ring */}
         <mesh position={[0, 0, 1.503]} renderOrder={11}>
-          <ringGeometry args={[0.61, 0.66, 64]} />
-          <meshBasicMaterial color="#0bb7e5" transparent opacity={0.18} blending={THREE.AdditiveBlending} depthWrite={false} depthTest={false} />
+          <ringGeometry args={[0.6, 0.7, 96]} />
+          <meshBasicMaterial color="#0bb7e5" transparent opacity={0.14} blending={THREE.AdditiveBlending} depthWrite={false} depthTest={false} />
         </mesh>
         {/* Glass disc */}
         <mesh position={[0, 0, 1.5]} renderOrder={12}> 
@@ -279,13 +294,15 @@ export default function MagicBall() {
         {response && (
           <Text
             ref={triangleTextRef}
-            position={[0, 0, THREE.MathUtils.lerp(1.4, 1.515, emergeProgress)]}
-            fontSize={0.14}
+            position={[0, textYOffset, THREE.MathUtils.lerp(1.4, 1.515, emergeProgress)]}
+            fontSize={textFontSize}
             color="#e8fbff"
             anchorX="center"
             anchorY="middle"
-            maxWidth={0.8}
+            maxWidth={textMaxWidth}
             textAlign="center"
+            letterSpacing={textLetterSpacing}
+            lineHeight={1.1}
             fillOpacity={0.15 + 0.85 * emergeProgress}
             outlineWidth={0.004}
             outlineColor="#00121d"

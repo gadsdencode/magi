@@ -1,6 +1,8 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
+import dotenv from "dotenv";
+dotenv.config();
 
 // Gemini AI Integration
 interface GeminiResponse {
