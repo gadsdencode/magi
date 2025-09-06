@@ -81,10 +81,10 @@ function MagicBall() {
           audio.play().catch(e => console.log("Audio play failed:", e));
         } catch (e) {}
         
-        // Smooth text fade-in
+        // Smooth text fade-in after ball faces user
         setTimeout(() => {
           setTextOpacity(1);
-        }, 300);
+        }, 800);
         
       } catch (error) {
         console.error("Failed to get prediction:", error);
@@ -200,8 +200,18 @@ function MagicBall() {
       const targetPos = new THREE.Vector3(0, 0, 0);
       currentPos.lerp(targetPos, delta * 1.5);
       
-      // Gentle floating and rotation when idle
-      if (!isLoading) {
+      // Face user with prediction or gentle floating when idle
+      if (response && !isLoading) {
+        // Rotate to face user (window toward camera)
+        const targetRotation = new THREE.Euler(0, 0, 0);
+        groupRef.current.rotation.x = THREE.MathUtils.lerp(groupRef.current.rotation.x, targetRotation.x, delta * 2);
+        groupRef.current.rotation.y = THREE.MathUtils.lerp(groupRef.current.rotation.y, targetRotation.y, delta * 2);
+        groupRef.current.rotation.z = THREE.MathUtils.lerp(groupRef.current.rotation.z, targetRotation.z, delta * 2);
+        
+        // Gentle breathing motion while showing prediction
+        groupRef.current.position.y += Math.sin(time * 1.5) * 0.02;
+      } else if (!isLoading) {
+        // Gentle floating and rotation when idle
         groupRef.current.position.y += Math.sin(time * 0.8) * 0.03;
         groupRef.current.rotation.y += delta * 0.3;
         
