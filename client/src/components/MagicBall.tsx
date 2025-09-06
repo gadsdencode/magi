@@ -7,7 +7,7 @@ import { useAudio } from '../lib/stores/useAudio';
 
 export default function MagicBall() {
   const meshRef = useRef<THREE.Mesh>(null);
-  const windowRef = useRef<THREE.Mesh>(null);
+  // Window ref removed since window is eliminated
   const textRef = useRef<THREE.Mesh>(null);
   const groupRef = useRef<THREE.Group>(null);
   
@@ -42,14 +42,7 @@ export default function MagicBall() {
     envMapIntensity: 1.5,
   });
 
-  const windowMaterial = new THREE.MeshPhysicalMaterial({
-    color: 0x001122,
-    transparent: true,
-    opacity: 0.8,
-    metalness: 0.2,
-    roughness: 0.3,
-    clearcoat: 0.5,
-  });
+  // Window material removed since window is eliminated
 
   // Handle keyboard controls
   useEffect(() => {
@@ -193,15 +186,7 @@ export default function MagicBall() {
         onPointerLeave={() => document.body.style.cursor = 'default'}
       />
       
-      {/* Window for displaying text */}
-      <mesh
-        ref={windowRef}
-        position={[0, 0, 1.4]}
-        rotation={[0, 0, 0]}
-      >
-        <circleGeometry args={[0.6, 32]} />
-        <primitive object={windowMaterial} />
-      </mesh>
+      {/* WINDOW COMPLETELY REMOVED - NO BLACK CIRCLE */}
       
       {/* Response Text */}
       {response && !isLoading && (
