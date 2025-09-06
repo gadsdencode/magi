@@ -288,24 +288,47 @@ function MagicBall() {
         />
       </mesh>
       
-      {/* Mystical Response Text with Fade Animation */}
+      {/* Curved Response Text following ball surface */}
       {response && (
-        <Text
-          ref={textRef}
-          position={[0, 0, 1.48]}
-          fontSize={0.12}
-          color="#FFFFFF"
-          anchorX="center"
-          anchorY="middle"
-          maxWidth={1.0}
-          textAlign="center"
-          fillOpacity={textOpacity}
-          strokeWidth={0.005}
-          strokeColor="#000000"
-          fontWeight="bold"
-        >
-          {response}
-        </Text>
+        <group>
+          {/* Split text into multiple curved lines */}
+          {response.split(' ').reduce((acc, word, index, words) => {
+            const wordsPerLine = 3;
+            const lineIndex = Math.floor(index / wordsPerLine);
+            const wordInLine = index % wordsPerLine;
+            
+            if (!acc[lineIndex]) acc[lineIndex] = [];
+            acc[lineIndex].push(word);
+            return acc;
+          }, [] as string[][]).map((lineWords, lineIndex, allLines) => {
+            const totalLines = allLines.length;
+            const lineText = lineWords.join(' ');
+            
+            // Position lines vertically spaced around center
+            const lineSpacing = 0.15;
+            const startY = (totalLines - 1) * lineSpacing / 2;
+            const yPos = startY - (lineIndex * lineSpacing);
+            
+            return (
+              <Text
+                key={lineIndex}
+                position={[0, yPos, 1.48]}
+                fontSize={0.1}
+                color="#FFFFFF"
+                anchorX="center"
+                anchorY="middle"
+                maxWidth={1.1}
+                textAlign="center"
+                fillOpacity={textOpacity}
+                strokeWidth={0.004}
+                strokeColor="#000000"
+                fontWeight="bold"
+              >
+                {lineText}
+              </Text>
+            );
+          })}
+        </group>
       )}
       
       {/* Loading Animation */}
@@ -322,14 +345,14 @@ function MagicBall() {
         </Text>
       )}
       
-      {/* "8" Number on Ball */}
+      {/* "8" Number on Ball - moved away from text area */}
       <Text
-        position={[0, -0.3, 1.35]}
-        fontSize={0.25}
+        position={[0, 0.8, 1.2]}
+        fontSize={0.2}
         color="#FFFFFF"
         anchorX="center"
         anchorY="middle"
-        strokeWidth={0.008}
+        strokeWidth={0.006}
         strokeColor="#000000"
         fontWeight="bold"
       >
