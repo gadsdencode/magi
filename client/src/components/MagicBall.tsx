@@ -105,9 +105,20 @@ export default function MagicBall() {
   }, [response]);
 
   useEffect(() => {
+    const isEditableElementActive = () => {
+      const el = (document.activeElement as HTMLElement | null);
+      if (!el) return false;
+      const tag = el.tagName?.toLowerCase();
+      return tag === 'input' || tag === 'textarea' || el.isContentEditable;
+    };
+
     const unsubscribeShake = subscribe(
       (state) => state.shake,
-      (pressed) => pressed && !isShaking && !isLoading && handleShake()
+      (pressed) => {
+        if (!pressed) return;
+        if (isEditableElementActive()) return;
+        if (!isShaking && !isLoading) handleShake();
+      }
     );
     const unsubscribeReset = subscribe(
       (state) => state.reset,

@@ -12,8 +12,9 @@ interface MagicBallState {
   stopShake: () => void;
   setResponse: (response: string) => void;
   setLoading: (loading: boolean) => void;
+  setQuestion: (question: string) => void;
   resetBall: () => void;
-  fetchResponse: () => Promise<void>;
+  fetchResponse: (question?: string) => Promise<void>;
 }
 
 export const useMagicBall = create<MagicBallState>()(
@@ -39,6 +40,10 @@ export const useMagicBall = create<MagicBallState>()(
       set({ isLoading: loading });
     },
     
+    setQuestion: (question: string) => {
+      set({ question });
+    },
+    
     resetBall: () => {
       set({ 
         isShaking: false, 
@@ -48,7 +53,7 @@ export const useMagicBall = create<MagicBallState>()(
       });
     },
     
-    fetchResponse: async () => {
+    fetchResponse: async (question?: string) => {
       set({ isLoading: true });
       
       try {
@@ -59,7 +64,8 @@ export const useMagicBall = create<MagicBallState>()(
           },
           body: JSON.stringify({
             timestamp: Date.now(),
-            sessionId: Math.random().toString(36).substring(7)
+            sessionId: Math.random().toString(36).substring(7),
+            question: typeof question === 'string' ? question : get().question || undefined
           }),
         });
         

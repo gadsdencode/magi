@@ -1,12 +1,22 @@
+import { useState } from 'react';
 import { useMagicBall } from '../lib/stores/useMagicBall';
 import { useAudio } from '../lib/stores/useAudio';
 import { Button } from './ui/button';
 import { Card, CardContent } from './ui/card';
-import { Volume2, VolumeX, RotateCcw } from 'lucide-react';
+import { Input } from './ui/input';
+import { Volume2, VolumeX, RotateCcw, HelpCircle, SendHorizontal } from 'lucide-react';
 
 export default function GameUI() {
-  const { isLoading, resetBall } = useMagicBall();
+  const { isLoading, resetBall, fetchResponse, setQuestion, question, isShaking } = useMagicBall();
   const { isMuted, toggleMute } = useAudio();
+  const [localQuestion, setLocalQuestion] = useState<string>(question ?? '');
+
+  const submitQuestion = async () => {
+    const q = localQuestion.trim();
+    if (!q || isLoading || isShaking) return;
+    setQuestion(q);
+    await fetchResponse(q);
+  };
 
   return (
     <div className="absolute inset-0 pointer-events-none">
@@ -41,14 +51,43 @@ export default function GameUI() {
         </div>
       </div>
 
-      {/* Bottom Instructions / Status */}
-      <div className="absolute bottom-6 left-1/2 -translate-x-1/2">
-          <p className="text-center text-gray-400 text-sm bg-black/30 backdrop-blur-sm px-4 py-2 rounded-lg">
-            {isLoading 
-              ? 'The cosmos are aligning...' 
-              : 'Click the Oracle or press SPACE to ask a question.'
-            }
-          </p>
+      {/* Bottom Input / Instructions */}
+      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 w-[90vw] max-w-xl pointer-events-auto">
+        <div className="flex items-center gap-2">
+          <div className="flex-1">
+            <Input
+              placeholder="Type your question for the Oracle..."
+              value={localQuestion}
+              onChange={(e) => setLocalQuestion(e.target.value)}
+              onKeyDown={(e) => {
+                // Allow spacebar to insert a normal space in the input
+                if (e.key === ' ') {
+                  e.stopPropagation();
+                }
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  submitQuestion();
+                }
+              }}
+              className="bg-black/30 border-cyan-500/30 text-cyan-100 placeholder:text-cyan-300/40"
+              disabled={isLoading}
+            />
+          </div>
+          <Button
+            variant="outline"
+            onClick={submitQuestion}
+            disabled={isLoading || !localQuestion.trim()}
+            className="bg-black/30 backdrop-blur-sm border-cyan-500/30 hover:bg-cyan-500/20 text-cyan-400"
+          >
+            <SendHorizontal className="h-4 w-4 mr-1" /> Ask
+          </Button>
+        </div>
+        <p className="mt-2 text-center text-gray-400 text-sm bg-black/30 backdrop-blur-sm px-4 py-2 rounded-lg">
+          {isLoading 
+            ? 'The cosmos are aligning...'
+            : 'Click the Oracle, press SPACE, or type a question and press Enter.'
+          }
+        </p>
       </div>
 
       {/* Mystical background effects */}
