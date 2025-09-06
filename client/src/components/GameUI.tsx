@@ -75,7 +75,7 @@ export default function GameUI() {
       {/* Response Display */}
       {(response || isLoading) && !showInstructions && (
         <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 pointer-events-auto">
-          <Card className="bg-black/40 backdrop-blur-md border-cyan-500/30 max-w-lg">
+          <Card className="bg-transparent border-none max-w-lg">
             <CardContent className="p-6">
               {isLoading ? (
                 <div className="text-center">
