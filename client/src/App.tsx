@@ -412,7 +412,18 @@ function App() {
         >
           <color attach="background" args={["#16213E"]} />
           
-          <Lights />
+          {/* Use the simple lighting instead of complex Lights component */}
+          {/* Clean ambient light */}
+          <ambientLight intensity={0.4} color="#ffffff" />
+          
+          {/* Single main directional light */}
+          <directionalLight
+            position={[5, 8, 5]}
+            intensity={1.0}
+            color="#ffffff"
+            castShadow
+            shadow-mapSize={[1024, 1024]}
+          />
 
           <Suspense fallback={null}>
             <MagicBall />
