@@ -255,49 +255,23 @@ function MagicBall() {
         />
       </Sphere>
       
-      {/* NO WINDOW CIRCLE - COMPLETELY REMOVED TO ELIMINATE BLACK CIRCLE */}
-      
-      {/* Curved Response Text following ball surface */}
+      {/* Response Text - positioned away from ball surface */}
       {response && (
-        <group>
-          {/* Split text into multiple curved lines */}
-          {response.split(' ').reduce((acc, word, index, words) => {
-            const wordsPerLine = 3;
-            const lineIndex = Math.floor(index / wordsPerLine);
-            const wordInLine = index % wordsPerLine;
-            
-            if (!acc[lineIndex]) acc[lineIndex] = [];
-            acc[lineIndex].push(word);
-            return acc;
-          }, [] as string[][]).map((lineWords, lineIndex, allLines) => {
-            const totalLines = allLines.length;
-            const lineText = lineWords.join(' ');
-            
-            // Position lines vertically spaced around center
-            const lineSpacing = 0.15;
-            const startY = (totalLines - 1) * lineSpacing / 2;
-            const yPos = startY - (lineIndex * lineSpacing);
-            
-            return (
-              <Text
-                key={lineIndex}
-                position={[0, yPos, 1.48]}
-                fontSize={0.1}
-                color="#FFFFFF"
-                anchorX="center"
-                anchorY="middle"
-                maxWidth={1.1}
-                textAlign="center"
-                fillOpacity={textOpacity}
-                strokeWidth={0.004}
-                strokeColor="#000000"
-                fontWeight="bold"
-              >
-                {lineText}
-              </Text>
-            );
-          })}
-        </group>
+        <Text
+          position={[0, -2.5, 0]}
+          fontSize={0.15}
+          color="#00D9FF"
+          anchorX="center"
+          anchorY="middle"
+          maxWidth={3}
+          textAlign="center"
+          fillOpacity={textOpacity}
+          strokeWidth={0.006}
+          strokeColor="#000000"
+          fontWeight="bold"
+        >
+          {response}
+        </Text>
       )}
       
       {/* Loading Animation */}
