@@ -52,7 +52,7 @@ export default function GameUI() {
       </div>
 
       {/* Bottom Input / Instructions */}
-      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 w-[90vw] max-w-xl pointer-events-auto">
+      <div className="absolute bottom-24 sm:bottom-12 md:bottom-8 left-1/2 -translate-x-1/2 w-[90vw] max-w-xl pointer-events-auto">
         <div className="flex items-center gap-2">
           <div className="flex-1">
             <Input
@@ -82,7 +82,7 @@ export default function GameUI() {
             <SendHorizontal className="h-4 w-4 mr-1" /> Ask
           </Button>
         </div>
-        <p className="mt-2 text-center text-gray-400 text-sm bg-black/30 backdrop-blur-sm px-4 py-2 rounded-lg">
+        <p className="mt-1 sm:mt-2 text-center text-gray-400 text-sm bg-black/30 backdrop-blur-sm px-4 py-2 rounded-lg">
           {isLoading 
             ? 'The cosmos are aligning...'
             : 'Click the Oracle, press SPACE, or type a question and press Enter.'
