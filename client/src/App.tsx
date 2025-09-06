@@ -339,14 +339,38 @@ function MagicBall() {
   );
 }
 
-// Elegant Subtle Particles
+// Smooth Circular Particles
 function MysticalParticles() {
   const meshRef = useRef<THREE.Points>(null);
   const materialRef = useRef<THREE.PointsMaterial>(null);
   
+  // Create circular particle texture
+  const particleTexture = useMemo(() => {
+    const canvas = document.createElement('canvas');
+    canvas.width = 64;
+    canvas.height = 64;
+    const context = canvas.getContext('2d');
+    
+    if (context) {
+      // Create radial gradient for smooth circular particles
+      const gradient = context.createRadialGradient(32, 32, 0, 32, 32, 32);
+      gradient.addColorStop(0, 'rgba(255, 255, 255, 1)');
+      gradient.addColorStop(0.3, 'rgba(255, 255, 255, 0.8)');
+      gradient.addColorStop(0.7, 'rgba(255, 255, 255, 0.3)');
+      gradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
+      
+      context.fillStyle = gradient;
+      context.fillRect(0, 0, 64, 64);
+    }
+    
+    const texture = new THREE.CanvasTexture(canvas);
+    texture.needsUpdate = true;
+    return texture;
+  }, []);
+  
   // Create minimal, elegant particle system
   const particles = useMemo(() => {
-    const count = 50; // Much fewer particles
+    const count = 30; // Even fewer for cleaner look
     const positions = new Float32Array(count * 3);
     const colors = new Float32Array(count * 3);
     const sizes = new Float32Array(count);
@@ -358,29 +382,29 @@ function MysticalParticles() {
     ];
     
     for (let i = 0; i < count; i++) {
-      // Create a single elegant ring around the ball
-      const radius = 4 + Math.random() * 2;
-      const theta = (i / count) * Math.PI * 2 + Math.random() * 0.5;
-      const height = (Math.random() - 0.5) * 1;
+      // Create elegant scattered particles around the ball
+      const radius = 3.5 + Math.random() * 2.5;
+      const theta = (i / count) * Math.PI * 2 + Math.random() * 0.8;
+      const height = (Math.random() - 0.5) * 2;
       
       positions[i * 3] = radius * Math.cos(theta);
       positions[i * 3 + 1] = height;
       positions[i * 3 + 2] = radius * Math.sin(theta);
       
-      // Simple colors
+      // Soft colors
       const color = colorPalette[Math.floor(Math.random() * colorPalette.length)];
       colors[i * 3] = color.r;
       colors[i * 3 + 1] = color.g;
       colors[i * 3 + 2] = color.b;
       
-      // Consistent small sizes
-      sizes[i] = 2 + Math.random() * 2;
+      // Varied sizes for depth
+      sizes[i] = 15 + Math.random() * 10;
     }
     
     return { positions, colors, sizes, count };
   }, []);
 
-  // Simple, elegant animation
+  // Smooth, gentle animation
   useFrame((state) => {
     if (!meshRef.current) return;
     
@@ -391,23 +415,23 @@ function MysticalParticles() {
     for (let i = 0; i < particles.count; i++) {
       const i3 = i * 3;
       
-      // Simple orbital motion
+      // Gentle orbital motion
       const radius = Math.sqrt(particles.positions[i3] ** 2 + particles.positions[i3 + 2] ** 2);
       const baseAngle = Math.atan2(particles.positions[i3 + 2], particles.positions[i3]);
-      const angle = baseAngle + time * 0.3;
+      const angle = baseAngle + time * 0.2;
       
       positions[i3] = radius * Math.cos(angle);
       positions[i3 + 2] = radius * Math.sin(angle);
       
-      // Gentle floating
-      positions[i3 + 1] = particles.positions[i3 + 1] + Math.sin(time * 1.5 + i * 0.3) * 0.2;
+      // Subtle floating
+      positions[i3 + 1] = particles.positions[i3 + 1] + Math.sin(time * 1.2 + i * 0.4) * 0.15;
     }
     
     positionAttribute.needsUpdate = true;
     
-    // Subtle opacity fade
+    // Very subtle opacity breathing
     if (materialRef.current) {
-      materialRef.current.opacity = 0.3 + Math.sin(time * 1.2) * 0.1;
+      materialRef.current.opacity = 0.25 + Math.sin(time * 0.8) * 0.05;
     }
   });
 
@@ -435,13 +459,15 @@ function MysticalParticles() {
       </bufferGeometry>
       <pointsMaterial
         ref={materialRef}
-        size={2}
+        map={particleTexture}
+        size={20}
         sizeAttenuation={true}
         transparent={true}
-        opacity={0.4}
+        opacity={0.3}
         vertexColors={true}
         blending={THREE.AdditiveBlending}
         depthWrite={false}
+        alphaTest={0.001}
       />
     </points>
   );
@@ -545,10 +571,19 @@ function App() {
           gl={{
             antialias: true,
             powerPreference: "high-performance",
-            alpha: false
+            alpha: false,
+            stencil: false,
+            depth: true
           }}
+          dpr={[1, 2]}
         >
           <color attach="background" args={["#1A1A2E"]} />
+          
+          {/* Clean background environment */}
+          <mesh position={[0, 0, -20]}>
+            <planeGeometry args={[100, 100]} />
+            <meshBasicMaterial color="#16213E" />
+          </mesh>
           
           <Lights />
 
