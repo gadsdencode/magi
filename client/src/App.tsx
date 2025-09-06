@@ -339,192 +339,22 @@ function MagicBall() {
   );
 }
 
-// Smooth Circular Particles
-function MysticalParticles() {
-  const meshRef = useRef<THREE.Points>(null);
-  const materialRef = useRef<THREE.PointsMaterial>(null);
-  
-  // Create circular particle texture
-  const particleTexture = useMemo(() => {
-    const canvas = document.createElement('canvas');
-    canvas.width = 64;
-    canvas.height = 64;
-    const context = canvas.getContext('2d');
-    
-    if (context) {
-      // Create radial gradient for smooth circular particles
-      const gradient = context.createRadialGradient(32, 32, 0, 32, 32, 32);
-      gradient.addColorStop(0, 'rgba(255, 255, 255, 1)');
-      gradient.addColorStop(0.3, 'rgba(255, 255, 255, 0.8)');
-      gradient.addColorStop(0.7, 'rgba(255, 255, 255, 0.3)');
-      gradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
-      
-      context.fillStyle = gradient;
-      context.fillRect(0, 0, 64, 64);
-    }
-    
-    const texture = new THREE.CanvasTexture(canvas);
-    texture.needsUpdate = true;
-    return texture;
-  }, []);
-  
-  // Create minimal, elegant particle system
-  const particles = useMemo(() => {
-    const count = 30; // Even fewer for cleaner look
-    const positions = new Float32Array(count * 3);
-    const colors = new Float32Array(count * 3);
-    const sizes = new Float32Array(count);
-    
-    const colorPalette = [
-      new THREE.Color('#00D9FF'), // Electric cyan
-      new THREE.Color('#E94560'), // Mystic red
-      new THREE.Color('#FFFFFF'), // Pure white
-    ];
-    
-    for (let i = 0; i < count; i++) {
-      // Create elegant scattered particles around the ball
-      const radius = 3.5 + Math.random() * 2.5;
-      const theta = (i / count) * Math.PI * 2 + Math.random() * 0.8;
-      const height = (Math.random() - 0.5) * 2;
-      
-      positions[i * 3] = radius * Math.cos(theta);
-      positions[i * 3 + 1] = height;
-      positions[i * 3 + 2] = radius * Math.sin(theta);
-      
-      // Soft colors
-      const color = colorPalette[Math.floor(Math.random() * colorPalette.length)];
-      colors[i * 3] = color.r;
-      colors[i * 3 + 1] = color.g;
-      colors[i * 3 + 2] = color.b;
-      
-      // Varied sizes for depth
-      sizes[i] = 15 + Math.random() * 10;
-    }
-    
-    return { positions, colors, sizes, count };
-  }, []);
+// COMPLETELY REMOVED - NO PARTICLES AT ALL
 
-  // Smooth, gentle animation
-  useFrame((state) => {
-    if (!meshRef.current) return;
-    
-    const time = state.clock.elapsedTime;
-    const positionAttribute = meshRef.current.geometry.attributes.position;
-    const positions = positionAttribute.array as Float32Array;
-    
-    for (let i = 0; i < particles.count; i++) {
-      const i3 = i * 3;
-      
-      // Gentle orbital motion
-      const radius = Math.sqrt(particles.positions[i3] ** 2 + particles.positions[i3 + 2] ** 2);
-      const baseAngle = Math.atan2(particles.positions[i3 + 2], particles.positions[i3]);
-      const angle = baseAngle + time * 0.2;
-      
-      positions[i3] = radius * Math.cos(angle);
-      positions[i3 + 2] = radius * Math.sin(angle);
-      
-      // Subtle floating
-      positions[i3 + 1] = particles.positions[i3 + 1] + Math.sin(time * 1.2 + i * 0.4) * 0.15;
-    }
-    
-    positionAttribute.needsUpdate = true;
-    
-    // Very subtle opacity breathing
-    if (materialRef.current) {
-      materialRef.current.opacity = 0.25 + Math.sin(time * 0.8) * 0.05;
-    }
-  });
-
-  return (
-    <points ref={meshRef}>
-      <bufferGeometry>
-        <bufferAttribute
-          attach="attributes-position"
-          count={particles.positions.length / 3}
-          array={particles.positions}
-          itemSize={3}
-        />
-        <bufferAttribute
-          attach="attributes-color"
-          count={particles.colors.length / 3}
-          array={particles.colors}
-          itemSize={3}
-        />
-        <bufferAttribute
-          attach="attributes-size"
-          count={particles.sizes.length}
-          array={particles.sizes}
-          itemSize={1}
-        />
-      </bufferGeometry>
-      <pointsMaterial
-        ref={materialRef}
-        map={particleTexture}
-        size={20}
-        sizeAttenuation={true}
-        transparent={true}
-        opacity={0.3}
-        vertexColors={true}
-        blending={THREE.AdditiveBlending}
-        depthWrite={false}
-        alphaTest={0.001}
-      />
-    </points>
-  );
-}
-
-// Clean, Focused Lighting
+// Ultra-Clean Minimal Lighting
 function Lights() {
-  const pointLightRef = useRef<THREE.PointLight>(null);
-
-  useFrame((state) => {
-    const time = state.clock.elapsedTime;
-    
-    // Single animated accent light
-    if (pointLightRef.current) {
-      pointLightRef.current.intensity = 0.5 + Math.sin(time * 2) * 0.2;
-      const radius = 5;
-      pointLightRef.current.position.x = Math.cos(time * 0.5) * radius;
-      pointLightRef.current.position.z = Math.sin(time * 0.5) * radius;
-    }
-  });
-
   return (
     <>
-      {/* Soft ambient lighting */}
-      <ambientLight intensity={0.3} color="#1A1A2E" />
+      {/* Clean ambient light */}
+      <ambientLight intensity={0.4} color="#ffffff" />
       
-      {/* Main directional light for the ball */}
+      {/* Single main directional light */}
       <directionalLight
-        position={[5, 10, 5]}
-        intensity={1.2}
-        color="#F5F5F5"
+        position={[5, 8, 5]}
+        intensity={1.0}
+        color="#ffffff"
         castShadow
-        shadow-mapSize={[2048, 2048]}
-        shadow-camera-far={50}
-        shadow-camera-left={-10}
-        shadow-camera-right={10}
-        shadow-camera-top={10}
-        shadow-camera-bottom={-10}
-      />
-      
-      {/* Subtle animated accent light */}
-      <pointLight
-        ref={pointLightRef}
-        position={[0, 3, 5]}
-        intensity={0.5}
-        color="#00D9FF"
-        distance={15}
-        decay={2}
-      />
-      
-      {/* Gentle rim light */}
-      <pointLight
-        position={[-3, 2, -3]}
-        intensity={0.3}
-        color="#0F4C75"
-        distance={10}
-        decay={2}
+        shadow-mapSize={[1024, 1024]}
       />
     </>
   );
@@ -557,7 +387,7 @@ function App() {
       height: '100vh', 
       position: 'relative', 
       overflow: 'hidden', 
-      background: 'linear-gradient(135deg, #1A1A2E 0%, #16213E 50%, #0F4C75 100%)' 
+      background: '#16213E'
     }}>
       <KeyboardControls map={controls}>
         <Canvas
@@ -577,19 +407,12 @@ function App() {
           }}
           dpr={[1, 2]}
         >
-          <color attach="background" args={["#1A1A2E"]} />
-          
-          {/* Clean background environment */}
-          <mesh position={[0, 0, -20]}>
-            <planeGeometry args={[100, 100]} />
-            <meshBasicMaterial color="#16213E" />
-          </mesh>
+          <color attach="background" args={["#16213E"]} />
           
           <Lights />
 
           <Suspense fallback={null}>
             <MagicBall />
-            <MysticalParticles />
           </Suspense>
         </Canvas>
         
