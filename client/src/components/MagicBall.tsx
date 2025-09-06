@@ -17,6 +17,10 @@ const createTextTexture = (text: string, fontSize: number, width: number, height
   canvas.width = width;
   canvas.height = height;
 
+  // CRITICAL: Clear canvas with transparent background
+  context.clearRect(0, 0, width, height);
+  
+  // Set up text rendering
   context.font = `bold ${fontSize}px Orbitron`;
   context.textAlign = 'center';
   context.textBaseline = 'middle';
@@ -76,6 +80,7 @@ export const TextBillboardMaterial = shaderMaterial(
     uEmergeProgress: 0,
     uTextTexture: new THREE.Texture(),
     uTextColor: new THREE.Color('#1e5f99'),
+    // cameraPosition is automatically provided by Three.js
   },
   textVertexShader,
   textFragmentShader
@@ -186,8 +191,9 @@ export default function MagicBall() {
         textMatRef.current.uTime = time;
         textMatRef.current.uEmergeProgress = materialRef.current.uEmergeProgress;
         textMatRef.current.uTextTexture = textTexture;
-        // Choose a darker color for better contrast against the bright specular
-        textMatRef.current.uTextColor = new THREE.Color('#0f172a');
+        // Keep the defined darker blue color for readability
+        textMatRef.current.uTextColor = new THREE.Color('#1e5f99');
+        // cameraPosition is automatically provided by Three.js
       }
     }
   });
@@ -209,7 +215,7 @@ export default function MagicBall() {
       {response && !isLoading && (
         <Billboard ref={billboardRef}>
           <mesh>
-            <planeGeometry args={[1.6, 1.6]} />
+            <circleGeometry args={[0.9, 64]} />
             <textBillboardMaterial ref={textMatRef} uTextTexture={textTexture} transparent depthTest={false} depthWrite={false} />
           </mesh>
         </Billboard>
