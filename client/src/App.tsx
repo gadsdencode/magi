@@ -62,7 +62,7 @@ function MagicBall() {
       audio.play().catch(e => console.log("Audio play failed:", e));
     } catch (e) {}
     
-    // Get AI response after dramatic shaking
+    // Get AI response after shaking
     setTimeout(async () => {
       try {
         const response = await fetch('/api/magic-8-ball/prediction', {
@@ -77,14 +77,14 @@ function MagicBall() {
         // Play success sound
         try {
           const audio = new Audio('/sounds/success.mp3');
-          audio.volume = 0.3;
+          audio.volume = 0.4;
           audio.play().catch(e => console.log("Audio play failed:", e));
         } catch (e) {}
         
-        // Fade in text
+        // Smooth text fade-in
         setTimeout(() => {
           setTextOpacity(1);
-        }, 500);
+        }, 300);
         
       } catch (error) {
         console.error("Failed to get prediction:", error);
@@ -96,13 +96,13 @@ function MagicBall() {
       setIsLoading(false);
       setShakeIntensity(0);
       
-      // Gradually reduce movement
+      // Smooth movement reduction
       setTimeout(() => {
         setVelocity(new THREE.Vector3());
         setAngularVelocity(new THREE.Vector3());
-      }, 1000);
+      }, 800);
       
-    }, 3000); // Longer shake time for more drama
+    }, 2000); // Balanced shake time
   };
 
   // Enhanced keyboard controls
@@ -325,94 +325,62 @@ function MagicBall() {
         8
       </Text>
       
-      {/* Inner Mystical Glow */}
+      {/* Subtle Inner Glow */}
       <mesh position={[0, 0, 0]}>
-        <sphereGeometry args={[1.9, 64, 64]} />
+        <sphereGeometry args={[1.7, 32, 32]} />
         <meshBasicMaterial
           color="#00D9FF"
           transparent
-          opacity={isShaking ? 0.15 : 0.03}
+          opacity={isShaking ? 0.08 : 0.02}
           side={THREE.BackSide}
-        />
-      </mesh>
-      
-      {/* Outer Energy Aura */}
-      <mesh position={[0, 0, 0]}>
-        <sphereGeometry args={[2.2, 32, 32]} />
-        <meshBasicMaterial
-          color="#E94560"
-          transparent
-          opacity={isShaking ? 0.08 : 0.01}
-          side={THREE.BackSide}
-        />
-      </mesh>
-      
-      {/* Particle Ring Effect */}
-      <mesh position={[0, 0, 0]} rotation={[0, 0, 0]}>
-        <torusGeometry args={[2.5, 0.1, 8, 32]} />
-        <meshBasicMaterial
-          color="#0F4C75"
-          transparent
-          opacity={isShaking ? 0.4 : 0.1}
         />
       </mesh>
     </group>
   );
 }
 
-// Enhanced Mystical Particles Component
+// Elegant Subtle Particles
 function MysticalParticles() {
   const meshRef = useRef<THREE.Points>(null);
   const materialRef = useRef<THREE.PointsMaterial>(null);
   
-  // Create enhanced particle system
+  // Create minimal, elegant particle system
   const particles = useMemo(() => {
-    const count = 500;
+    const count = 50; // Much fewer particles
     const positions = new Float32Array(count * 3);
     const colors = new Float32Array(count * 3);
     const sizes = new Float32Array(count);
-    const velocities = new Float32Array(count * 3);
     
     const colorPalette = [
       new THREE.Color('#00D9FF'), // Electric cyan
       new THREE.Color('#E94560'), // Mystic red
-      new THREE.Color('#0F4C75'), // Ocean blue
       new THREE.Color('#FFFFFF'), // Pure white
-      new THREE.Color('#8A2BE2'), // Blue violet
-      new THREE.Color('#FF6B6B'), // Coral
     ];
     
     for (let i = 0; i < count; i++) {
-      // Create multiple particle rings
-      const ring = Math.floor(i / 100);
-      const radius = 3 + ring * 1.5 + Math.random() * 2;
-      const theta = Math.random() * Math.PI * 2;
-      const phi = Math.random() * Math.PI;
+      // Create a single elegant ring around the ball
+      const radius = 4 + Math.random() * 2;
+      const theta = (i / count) * Math.PI * 2 + Math.random() * 0.5;
+      const height = (Math.random() - 0.5) * 1;
       
-      positions[i * 3] = radius * Math.sin(phi) * Math.cos(theta);
-      positions[i * 3 + 1] = radius * Math.sin(phi) * Math.sin(theta) + (Math.random() - 0.5) * 3;
-      positions[i * 3 + 2] = radius * Math.cos(phi);
+      positions[i * 3] = radius * Math.cos(theta);
+      positions[i * 3 + 1] = height;
+      positions[i * 3 + 2] = radius * Math.sin(theta);
       
-      // Enhanced colors with intensity variation
+      // Simple colors
       const color = colorPalette[Math.floor(Math.random() * colorPalette.length)];
-      const intensity = 0.5 + Math.random() * 0.5;
-      colors[i * 3] = color.r * intensity;
-      colors[i * 3 + 1] = color.g * intensity;
-      colors[i * 3 + 2] = color.b * intensity;
+      colors[i * 3] = color.r;
+      colors[i * 3 + 1] = color.g;
+      colors[i * 3 + 2] = color.b;
       
-      // Varied sizes for depth
-      sizes[i] = Math.random() * 6 + 2;
-      
-      // More dynamic velocities
-      velocities[i * 3] = (Math.random() - 0.5) * 0.05;
-      velocities[i * 3 + 1] = (Math.random() - 0.5) * 0.03;
-      velocities[i * 3 + 2] = (Math.random() - 0.5) * 0.05;
+      // Consistent small sizes
+      sizes[i] = 2 + Math.random() * 2;
     }
     
-    return { positions, colors, sizes, velocities, count };
+    return { positions, colors, sizes, count };
   }, []);
 
-  // Enhanced particle animation
+  // Simple, elegant animation
   useFrame((state) => {
     if (!meshRef.current) return;
     
@@ -423,57 +391,23 @@ function MysticalParticles() {
     for (let i = 0; i < particles.count; i++) {
       const i3 = i * 3;
       
-      // Current position
-      const x = positions[i3];
-      const y = positions[i3 + 1];
-      const z = positions[i3 + 2];
+      // Simple orbital motion
+      const radius = Math.sqrt(particles.positions[i3] ** 2 + particles.positions[i3 + 2] ** 2);
+      const baseAngle = Math.atan2(particles.positions[i3 + 2], particles.positions[i3]);
+      const angle = baseAngle + time * 0.3;
       
-      // Multi-layered orbital motion
-      const radius = Math.sqrt(x * x + z * z);
-      const baseAngle = Math.atan2(z, x);
-      const ringSpeed = 0.1 + (i % 5) * 0.05;
-      const angle = baseAngle + time * ringSpeed;
+      positions[i3] = radius * Math.cos(angle);
+      positions[i3 + 2] = radius * Math.sin(angle);
       
-      // Spiral motion with sine waves
-      positions[i3] = radius * Math.cos(angle) + Math.sin(time * 3 + i * 0.1) * 0.5;
-      positions[i3 + 2] = radius * Math.sin(angle) + Math.cos(time * 2.5 + i * 0.15) * 0.5;
-      
-      // Complex vertical motion
-      const verticalBase = particles.positions[i3 + 1] / 3;
-      positions[i3 + 1] = verticalBase + 
-        Math.sin(time * 2 + i * 0.1) * 0.8 + 
-        Math.cos(time * 4 + i * 0.05) * 0.3 +
-        Math.sin(time * 1.5 + angle) * 0.4;
-      
-      // Add dynamic drift
-      positions[i3] += particles.velocities[i3] * Math.sin(time + i);
-      positions[i3 + 1] += particles.velocities[i3 + 1] * Math.cos(time * 0.5 + i);
-      positions[i3 + 2] += particles.velocities[i3 + 2] * Math.sin(time * 1.2 + i);
-      
-      // Reset particles that drift too far with new energy
-      const distance = Math.sqrt(x * x + y * y + z * z);
-      if (distance > 18) {
-        const newRadius = 3 + Math.random() * 4;
-        const newTheta = Math.random() * Math.PI * 2;
-        const newPhi = Math.random() * Math.PI;
-        
-        positions[i3] = newRadius * Math.sin(newPhi) * Math.cos(newTheta);
-        positions[i3 + 1] = newRadius * Math.sin(newPhi) * Math.sin(newTheta);
-        positions[i3 + 2] = newRadius * Math.cos(newPhi);
-      }
+      // Gentle floating
+      positions[i3 + 1] = particles.positions[i3 + 1] + Math.sin(time * 1.5 + i * 0.3) * 0.2;
     }
     
     positionAttribute.needsUpdate = true;
     
-    // Enhanced system rotation
-    meshRef.current.rotation.y = time * 0.08;
-    meshRef.current.rotation.x = Math.sin(time * 0.2) * 0.15;
-    meshRef.current.rotation.z = Math.cos(time * 0.15) * 0.1;
-    
-    // Dynamic opacity and size pulsing
+    // Subtle opacity fade
     if (materialRef.current) {
-      materialRef.current.opacity = 0.6 + Math.sin(time * 2) * 0.3;
-      materialRef.current.size = 4 + Math.sin(time * 3) * 1.5;
+      materialRef.current.opacity = 0.3 + Math.sin(time * 1.2) * 0.1;
     }
   });
 
@@ -501,10 +435,10 @@ function MysticalParticles() {
       </bufferGeometry>
       <pointsMaterial
         ref={materialRef}
-        size={4}
+        size={2}
         sizeAttenuation={true}
         transparent={true}
-        opacity={0.7}
+        opacity={0.4}
         vertexColors={true}
         blending={THREE.AdditiveBlending}
         depthWrite={false}
@@ -513,131 +447,58 @@ function MysticalParticles() {
   );
 }
 
-// Enhanced Dramatic Lighting
+// Clean, Focused Lighting
 function Lights() {
   const pointLightRef = useRef<THREE.PointLight>(null);
-  const spotLightRef = useRef<THREE.SpotLight>(null);
-  const orbitalLight1 = useRef<THREE.PointLight>(null);
-  const orbitalLight2 = useRef<THREE.PointLight>(null);
 
   useFrame((state) => {
     const time = state.clock.elapsedTime;
     
-    // Main mystical point light
+    // Single animated accent light
     if (pointLightRef.current) {
-      pointLightRef.current.intensity = 0.8 + Math.sin(time * 3) * 0.4;
-      const radius = 6;
-      pointLightRef.current.position.x = Math.cos(time * 0.8) * radius;
-      pointLightRef.current.position.z = Math.sin(time * 0.8) * radius;
-      pointLightRef.current.position.y = 4 + Math.sin(time * 1.2) * 2;
-    }
-    
-    // Dramatic spot light
-    if (spotLightRef.current) {
-      spotLightRef.current.intensity = 1.2 + Math.sin(time * 2.5) * 0.5;
-      spotLightRef.current.position.x = Math.sin(time * 0.4) * 3;
-      spotLightRef.current.position.y = 10 + Math.cos(time * 0.6) * 2;
-    }
-    
-    // Orbital accent lights
-    if (orbitalLight1.current) {
-      const angle1 = time * 1.5;
-      const radius1 = 4;
-      orbitalLight1.current.position.x = Math.cos(angle1) * radius1;
-      orbitalLight1.current.position.z = Math.sin(angle1) * radius1;
-      orbitalLight1.current.intensity = 0.6 + Math.sin(time * 4) * 0.3;
-    }
-    
-    if (orbitalLight2.current) {
-      const angle2 = time * -1.2 + Math.PI;
-      const radius2 = 3.5;
-      orbitalLight2.current.position.x = Math.cos(angle2) * radius2;
-      orbitalLight2.current.position.z = Math.sin(angle2) * radius2;
-      orbitalLight2.current.intensity = 0.4 + Math.cos(time * 3.5) * 0.2;
+      pointLightRef.current.intensity = 0.5 + Math.sin(time * 2) * 0.2;
+      const radius = 5;
+      pointLightRef.current.position.x = Math.cos(time * 0.5) * radius;
+      pointLightRef.current.position.z = Math.sin(time * 0.5) * radius;
     }
   });
 
   return (
     <>
-      {/* Enhanced ambient lighting */}
-      <ambientLight intensity={0.15} color="#16213E" />
+      {/* Soft ambient lighting */}
+      <ambientLight intensity={0.3} color="#1A1A2E" />
       
-      {/* Main directional light */}
+      {/* Main directional light for the ball */}
       <directionalLight
-        position={[8, 12, 8]}
-        intensity={1.0}
+        position={[5, 10, 5]}
+        intensity={1.2}
         color="#F5F5F5"
         castShadow
-        shadow-mapSize={[4096, 4096]}
+        shadow-mapSize={[2048, 2048]}
         shadow-camera-far={50}
-        shadow-camera-left={-15}
-        shadow-camera-right={15}
-        shadow-camera-top={15}
-        shadow-camera-bottom={-15}
+        shadow-camera-left={-10}
+        shadow-camera-right={10}
+        shadow-camera-top={10}
+        shadow-camera-bottom={-10}
       />
       
-      {/* Dynamic mystical point light */}
+      {/* Subtle animated accent light */}
       <pointLight
         ref={pointLightRef}
-        position={[0, 4, 6]}
-        intensity={0.8}
+        position={[0, 3, 5]}
+        intensity={0.5}
         color="#00D9FF"
-        distance={20}
-        decay={1.5}
-      />
-      
-      {/* Dramatic top-down spot light */}
-      <spotLight
-        ref={spotLightRef}
-        position={[0, 10, 0]}
-        intensity={1.2}
-        color="#E94560"
-        angle={Math.PI / 4}
-        penumbra={0.3}
-        decay={1.8}
-        distance={25}
-        castShadow
-      />
-      
-      {/* Orbiting accent lights */}
-      <pointLight
-        ref={orbitalLight1}
-        position={[4, 2, 0]}
-        intensity={0.6}
-        color="#8A2BE2"
-        distance={12}
+        distance={15}
         decay={2}
       />
       
+      {/* Gentle rim light */}
       <pointLight
-        ref={orbitalLight2}
-        position={[-3.5, 1.5, -2]}
-        intensity={0.4}
-        color="#FF6B6B"
+        position={[-3, 2, -3]}
+        intensity={0.3}
+        color="#0F4C75"
         distance={10}
         decay={2}
-      />
-      
-      {/* Rim lighting for depth */}
-      <pointLight
-        position={[-5, 3, -5]}
-        intensity={0.4}
-        color="#0F4C75"
-        distance={15}
-        decay={2}
-      />
-      
-      <pointLight
-        position={[5, 3, -5]}
-        intensity={0.4}
-        color="#0F4C75"
-        distance={15}
-        decay={2}
-      />
-      
-      {/* Environment hemisphere light */}
-      <hemisphereLight
-        args={["#16213E", "#1A1A2E", 0.4]}
       />
     </>
   );
