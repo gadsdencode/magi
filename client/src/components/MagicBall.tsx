@@ -12,6 +12,12 @@ export default function MagicBall() {
   const groupRef = useRef<THREE.Group>(null);
   
   const { camera } = useThree();
+  const baseYRef = useRef<number>(0);
+  const windowGroupRef = useRef<THREE.Group>(null);
+  const triangleRef = useRef<THREE.Mesh>(null);
+  const triangleTextRef = useRef<any>(null);
+  const emergeProgressRef = useRef<number>(0);
+  const [emergeProgress, setEmergeProgress] = useState(0);
   const [subscribe, get] = useKeyboardControls();
   
   const { 
@@ -33,13 +39,15 @@ export default function MagicBall() {
   
   // Materials
   const ballMaterial = new THREE.MeshPhysicalMaterial({
-    color: 0x000000,
-    metalness: 0.1,
-    roughness: 0.1,
+    color: 0x0a0a0a,
+    metalness: 0.2,
+    roughness: 0.15,
     clearcoat: 1.0,
-    clearcoatRoughness: 0.1,
+    clearcoatRoughness: 0.05,
     reflectivity: 0.9,
-    envMapIntensity: 1.5,
+    envMapIntensity: 1.8,
+    emissive: new THREE.Color('#0b1f3b'),
+    emissiveIntensity: 0.15,
   });
 
   // Window material removed since window is eliminated
@@ -99,10 +107,15 @@ export default function MagicBall() {
     setShakeIntensity(1);
     
     // Fetch AI response
+    // Drive a short "sink then emerge" cycle for authenticity
+    emergeProgressRef.current = 0; setEmergeProgress(0);
     setTimeout(async () => {
       await fetchResponse();
-      stopShake();
-      playSuccess();
+      // brief delay as if the die flips
+      setTimeout(() => {
+        stopShake();
+        playSuccess();
+      }, 150);
       
       // Gradually stop the shaking
       setShakeIntensity(0);
@@ -110,6 +123,13 @@ export default function MagicBall() {
       setAngularVelocity(new THREE.Vector3());
     }, 2000);
   };
+
+  // Capture baseline Y after mount
+  useEffect(() => {
+    if (groupRef.current) {
+      baseYRef.current = groupRef.current.position.y;
+    }
+  }, []);
 
   // Animation loop
   useFrame((state, delta) => {
@@ -156,9 +176,18 @@ export default function MagicBall() {
       const currentPos = groupRef.current.position;
       currentPos.lerp(new THREE.Vector3(0, 0, 0), delta * 2);
       
-      // Gentle floating animation
-      groupRef.current.position.y += Math.sin(state.clock.elapsedTime * 0.5) * 0.02;
-      groupRef.current.rotation.y += delta * 0.2;
+      const time = state.clock.elapsedTime;
+      groupRef.current.position.y = baseYRef.current + Math.sin(time * 0.6) * 0.08;
+      
+      if (response && !isLoading) {
+        // When showing a response, face the window to the camera
+        groupRef.current.rotation.x = THREE.MathUtils.lerp(groupRef.current.rotation.x, 0, delta * 3);
+        groupRef.current.rotation.y = THREE.MathUtils.lerp(groupRef.current.rotation.y, 0, delta * 3);
+        groupRef.current.rotation.z = THREE.MathUtils.lerp(groupRef.current.rotation.z, 0, delta * 3);
+      } else {
+        // Gentle idle rotation when no response visible
+        groupRef.current.rotation.y += delta * 0.2;
+      }
     }
 
     // Make the ball look at camera slightly
@@ -170,6 +199,26 @@ export default function MagicBall() {
       
       groupRef.current.rotation.x = THREE.MathUtils.lerp(groupRef.current.rotation.x, targetRotation.x * 0.1, delta);
     }
+
+    // Water-emergence animation for the window triangle
+    const target = response && !isLoading ? 1 : 0;
+    emergeProgressRef.current = THREE.MathUtils.lerp(emergeProgressRef.current, target, delta * 2.2);
+    if (Math.abs(emergeProgress - emergeProgressRef.current) > 0.001) {
+      setEmergeProgress(emergeProgressRef.current);
+    }
+
+    if (windowGroupRef.current && triangleRef.current) {
+      const p = emergeProgressRef.current;
+      // Triangle emerges from inside the ball towards the glass
+      const startZ = 1.35; // deeper inside
+      const endZ = 1.49;   // just behind glass circle (and just under text)
+      triangleRef.current.position.z = THREE.MathUtils.lerp(startZ, endZ, p);
+      triangleRef.current.rotation.z = Math.sin(state.clock.elapsedTime * 0.6) * 0.02 * (1 - p); // tiny drift while deep
+      triangleRef.current.scale.setScalar(0.95 + p * 0.08);
+      if (triangleTextRef.current) {
+        triangleTextRef.current.material.opacity = 0.1 + p * 0.9;
+      }
+    }
   });
 
   return (
@@ -177,7 +226,7 @@ export default function MagicBall() {
       {/* Main Magic 8-Ball Sphere */}
       <Sphere
         ref={meshRef}
-        args={[1.5, 64, 64]}
+        args={[1.5, 96, 96]}
         material={ballMaterial}
         castShadow
         receiveShadow
@@ -186,47 +235,92 @@ export default function MagicBall() {
         onPointerLeave={() => document.body.style.cursor = 'default'}
       />
       
-      {/* WINDOW COMPLETELY REMOVED - NO BLACK CIRCLE */}
+      {/* Front circular window with glass */}
+      <group ref={windowGroupRef} position={[0, 0, 0]}>
+        {/* Outer bezel slightly protruding (rendered above the sphere) */}
+        <mesh position={[0, 0, 1.505]} renderOrder={10}> 
+          <circleGeometry args={[0.62, 64]} />
+          <meshPhysicalMaterial color="#0a0a0a" roughness={0.35} metalness={0.2} clearcoat={1} depthWrite={false} depthTest={false} />
+        </mesh>
+        {/* Subtle glow ring */}
+        <mesh position={[0, 0, 1.503]} renderOrder={11}>
+          <ringGeometry args={[0.61, 0.66, 64]} />
+          <meshBasicMaterial color="#0bb7e5" transparent opacity={0.18} blending={THREE.AdditiveBlending} depthWrite={false} depthTest={false} />
+        </mesh>
+        {/* Glass disc */}
+        <mesh position={[0, 0, 1.5]} renderOrder={12}> 
+          <circleGeometry args={[0.6, 64]} />
+          <meshPhysicalMaterial
+            color="#0a2a3f"
+            transparent
+            opacity={0.35}
+            roughness={0.08}
+            metalness={0}
+            transmission={0.9}
+            thickness={0.5}
+            clearcoat={1}
+            clearcoatRoughness={0.02}
+            depthWrite={false}
+            depthTest={false}
+          />
+        </mesh>
+        {/* Slight caustic-like inner glow */}
+        <mesh position={[0, 0, 1.48]} renderOrder={8}>
+          <circleGeometry args={[0.52, 64]} />
+          <meshBasicMaterial color="#0ab0df" transparent opacity={0.07} blending={THREE.AdditiveBlending} depthWrite={false} />
+        </mesh>
+        {/* Submerged triangle plate that carries the response */}
+        <mesh ref={triangleRef} position={[0, 0, 1.35]} renderOrder={9}>
+          {/* Equilateral triangle using ShapeGeometry */}
+          <shapeGeometry args={[(() => { const s = new THREE.Shape(); const r = 0.45; const h = Math.sqrt(3) * r; s.moveTo(0, r); s.lineTo(-h/2, -r/2); s.lineTo(h/2, -r/2); s.closePath(); return s; })()]} />
+          <meshStandardMaterial color="#113856" emissive="#072032" emissiveIntensity={0.5} metalness={0.1} roughness={0.9} depthWrite={false} />
+        </mesh>
+        {/* Text rendered slightly above the triangle */}
+        {response && (
+          <Text
+            ref={triangleTextRef}
+            position={[0, 0, THREE.MathUtils.lerp(1.4, 1.515, emergeProgress)]}
+            fontSize={0.14}
+            color="#e8fbff"
+            anchorX="center"
+            anchorY="middle"
+            maxWidth={0.8}
+            textAlign="center"
+            fillOpacity={0.15 + 0.85 * emergeProgress}
+            outlineWidth={0.004}
+            outlineColor="#00121d"
+            renderOrder={20}
+            material-depthTest={false}
+            material-depthWrite={false}
+            material-toneMapped={false}
+          >
+            {response?.toUpperCase()}
+          </Text>
+        )}
+      </group>
       
-      {/* Response Text */}
-      {response && !isLoading && (
-        <Text
-          ref={textRef}
-          position={[0, 0, 1.45]}
-          fontSize={0.12}
-          color="#00D9FF"
-          anchorX="center"
-          anchorY="middle"
-          maxWidth={1}
-          textAlign="center"
-          font="/fonts/inter.json"
-        >
-          {response}
-        </Text>
-      )}
+      {/* Surface response removed; handled inside the window */}
       
       {/* Loading indicator */}
       {isLoading && (
         <Text
-          position={[0, 0, 1.45]}
+          position={[0, 0, 1.44]}
           fontSize={0.1}
           color="#E94560"
           anchorX="center"
           anchorY="middle"
-          font="/fonts/inter.json"
         >
           ...
         </Text>
       )}
       
-      {/* Magic 8 text on the ball */}
+      {/* Optionally render the '8' very subtly, above the window */}
       <Text
-        position={[0, 0.8, 1.2]}
-        fontSize={0.15}
-        color="#F5F5F5"
+        position={[0, 0.9, 1.21]}
+        fontSize={0.12}
+        color="#2b2b2b"
         anchorX="center"
         anchorY="middle"
-        font="/fonts/inter.json"
       >
         8
       </Text>

@@ -21,9 +21,9 @@ export default function GameUI() {
     <div className="absolute inset-0 pointer-events-none">
       {/* Top UI Bar */}
       <div className="absolute top-4 left-4 right-4 flex justify-between items-start pointer-events-auto">
-        <Card className="bg-black/20 backdrop-blur-md border-cyan-500/30">
+        <Card className="bg-black/20 backdrop-blur-md border-cyan-500/30 glow-cyan">
           <CardContent className="p-3">
-            <h1 className="text-xl font-bold text-cyan-400 font-orbitron">
+            <h1 className="text-xl font-bold font-orbitron bg-gradient-to-r from-cyan-400 via-blue-300 to-red-400 bg-clip-text text-transparent drop-shadow-[0_0_6px_rgba(0,217,255,0.35)]">
               Magic 8-Ball Oracle
             </h1>
           </CardContent>
@@ -52,7 +52,7 @@ export default function GameUI() {
 
       {/* Instructions */}
       {showInstructions && (
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 pointer-events-auto">
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 pointer-events-none">
           <Card className="bg-black/40 backdrop-blur-md border-cyan-500/30 max-w-md">
             <CardContent className="p-6 text-center">
               <Sparkles className="h-8 w-8 text-cyan-400 mx-auto mb-4" />
@@ -72,32 +72,7 @@ export default function GameUI() {
         </div>
       )}
 
-      {/* Response Display */}
-      {(response || isLoading) && !showInstructions && (
-        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 pointer-events-auto">
-          <Card className="bg-transparent border-none max-w-lg">
-            <CardContent className="p-6">
-              {isLoading ? (
-                <div className="text-center">
-                  <div className="inline-flex items-center gap-2 text-red-400">
-                    <div className="animate-spin rounded-full h-4 w-4 border-2 border-red-400 border-t-transparent"></div>
-                    Consulting the Oracle...
-                  </div>
-                </div>
-              ) : (
-                <div className="text-center">
-                  <h3 className="text-lg font-bold text-cyan-400 mb-2">
-                    The Oracle Speaks:
-                  </h3>
-                  <p className="text-gray-100 text-base leading-relaxed">
-                    {response}
-                  </p>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </div>
-      )}
+      {/* Response Display moved into the ball window for authenticity */}
 
       {/* Shake indicator */}
       {isShaking && (

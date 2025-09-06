@@ -29,12 +29,12 @@ export default function Lights() {
   return (
     <>
       {/* Ambient light for overall illumination */}
-      <ambientLight intensity={0.2} color="#1A1A2E" />
+      <ambientLight intensity={0.45} color="#ffffff" />
       
       {/* Main directional light */}
       <directionalLight
-        position={[5, 10, 5]}
-        intensity={0.8}
+        position={[6, 10, 6]}
+        intensity={1.15}
         color="#F5F5F5"
         castShadow
         shadow-mapSize={[2048, 2048]}
@@ -49,7 +49,7 @@ export default function Lights() {
       <pointLight
         ref={pointLightRef}
         position={[0, 3, 5]}
-        intensity={0.5}
+        intensity={0.7}
         color="#00D9FF"
         distance={15}
         decay={2}
@@ -59,7 +59,7 @@ export default function Lights() {
       <spotLight
         ref={spotLightRef}
         position={[0, 8, 0]}
-        intensity={1}
+        intensity={1.1}
         color="#E94560"
         angle={Math.PI / 6}
         penumbra={0.5}
@@ -86,9 +86,7 @@ export default function Lights() {
       />
       
       {/* Environment reflection */}
-      <hemisphereLight
-        args={["#16213E", "#1A1A2E", 0.3]}
-      />
+      <hemisphereLight args={["#1b2a41", "#0b1626", 0.35]} />
     </>
   );
 }
