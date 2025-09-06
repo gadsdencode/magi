@@ -149,6 +149,20 @@ void main() {
   // Fade effects at circle edges
   float edgeFade = smoothstep(0.5, 0.35, distFromCenter);
   textMask *= edgeFade;
+
+  // Abyssal Vortex: swirl rotation + FBM reveal
+  vec2 toCenter = vUv - center;
+  float r = max(1e-5, length(toCenter));
+  float baseAngle = atan(toCenter.y, toCenter.x);
+  float swirlStrength = (1.0 - smoothstep(0.0, 0.5, r));
+  float angularOffset = (0.8 * uEmergeProgress + 0.3 * sin(uTime * 1.2)) * swirlStrength;
+  float angleSwirl = baseAngle + angularOffset;
+  vec2 swirlUv = center + vec2(cos(angleSwirl), sin(angleSwirl)) * r;
+
+  // FBM-driven reveal that increases with progress and swirls inward
+  float fbmField = fbm(swirlUv * 4.0 + vec2(uTime * 0.25, -uTime * 0.21), 5);
+  float reveal = smoothstep(0.35, 0.85, uEmergeProgress + fbmField * 0.6 - (r - 0.25));
+  textMask *= reveal;
   
   // For debugging - if there's ANY alpha, make it visible
   if (textMask < 0.001) {
@@ -209,20 +223,23 @@ void main() {
   // Ensure minimum visibility underwater but allow full ocean effects
   organicMask = max(organicMask, emergenceMask * 0.3); // 30% minimum when emerging
   
-  // Underwater distortion for submerged parts
+  // Underwater distortion with subtle chromatic refraction
   vec2 distortedUv = vUv;
-  if (organicMask < 0.7) {
-    // Refraction effect for underwater text
-    vec2 refraction = vec2(
-      noise(vUv * 10.0 + uTime * 0.5),
-      noise(vUv * 10.0 + uTime * 0.3 + 100.0)
-    ) * 0.02;
-    distortedUv += refraction * (1.0 - organicMask);
+  if (organicMask < 0.85) {
+    float refAmount = (1.0 - organicMask) * 0.03;
+    vec2 refVec = vec2(
+      noise(swirlUv * 8.0 + uTime * 0.4),
+      noise(swirlUv * 8.0 + uTime * 0.3 + 100.0)
+    );
+    distortedUv += refVec * refAmount;
   }
   
-  // Sample text with distortion - use alpha channel as mask
-  vec4 distortedTextSample = texture2D(uTextTexture, distortedUv);
-  float distortedTextMask = distortedTextSample.a;
+  // Sample text with chromatic refraction (slight RGB offsets)
+  vec2 rgbOffset = vec2(0.0015, -0.0015) * (1.0 - organicMask);
+  float maskR = texture2D(uTextTexture, distortedUv + rgbOffset).a;
+  float maskG = texture2D(uTextTexture, distortedUv).a;
+  float maskB = texture2D(uTextTexture, distortedUv - rgbOffset).a;
+  float distortedTextMask = (maskR + maskG + maskB) / 3.0;
   
   // Apply text color with depth-based tinting
   vec3 textColor = uTextColor;
@@ -253,10 +270,15 @@ void main() {
     finalColor = surfaceColor;
   }
   
-  // Add surface wetness shine
+  // Emissive rim glow for the vortex edge
+  float rim = smoothstep(0.46, 0.5, distFromCenter);
+  vec3 rimGlow = vec3(0.1, 0.6, 0.9) * rim * (0.6 + 0.4 * sin(uTime * 2.0));
+  finalColor += rimGlow * 0.7 * edgeFade;
+
+  // Surface wetness shine
   float fresnelFactor = fresnel(viewDir, vNormal, 1.333);
-  float wetness = smoothstep(0.5, 1.0, organicMask) * 0.3;
-  finalColor += vec3(0.1, 0.15, 0.2) * wetness * fresnelFactor;
+  float wetness = smoothstep(0.5, 1.0, organicMask) * 0.25;
+  finalColor += vec3(0.08, 0.12, 0.18) * wetness * fresnelFactor;
   
   // Proper ocean emergence with visible text
   float waterEffectsAlpha = (foamIntensity * 0.7 + spray) * edgeFade;
