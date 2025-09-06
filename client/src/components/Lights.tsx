@@ -87,9 +87,7 @@ export default function Lights() {
       
       {/* Environment reflection */}
       <hemisphereLight
-        skyColor="#16213E"
-        groundColor="#1A1A2E"
-        intensity={0.3}
+        args={["#16213E", "#1A1A2E", 0.3]}
       />
     </>
   );
