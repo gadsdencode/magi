@@ -276,15 +276,15 @@ function MagicBall() {
       >
         <circleGeometry args={[0.65, 64]} />
         <meshPhysicalMaterial
-          color={0x001133}
+          color={0x112244}
           transparent
-          opacity={0.9}
-          metalness={0.3}
-          roughness={0.2}
-          clearcoat={0.8}
-          clearcoatRoughness={0.1}
-          emissive={0x000000}
-          emissiveIntensity={0}
+          opacity={0.3}
+          metalness={0.1}
+          roughness={0.8}
+          clearcoat={0.2}
+          clearcoatRoughness={0.3}
+          emissive={0x001122}
+          emissiveIntensity={0.2}
         />
       </mesh>
       
@@ -293,15 +293,16 @@ function MagicBall() {
         <Text
           ref={textRef}
           position={[0, 0, 1.48]}
-          fontSize={0.11}
-          color="#00D9FF"
+          fontSize={0.12}
+          color="#FFFFFF"
           anchorX="center"
           anchorY="middle"
-          maxWidth={1.1}
+          maxWidth={1.0}
           textAlign="center"
           fillOpacity={textOpacity}
-          strokeWidth={0.002}
-          strokeColor="#003366"
+          strokeWidth={0.005}
+          strokeColor="#000000"
+          fontWeight="bold"
         >
           {response}
         </Text>
