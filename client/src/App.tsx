@@ -241,17 +241,17 @@ function MagicBall() {
         onPointerLeave={() => document.body.style.cursor = 'default'}
       >
         <meshPhysicalMaterial
-          color={0x000000}
-          metalness={0.1}
-          roughness={0.02}
+          color={0x1a1a2e}
+          metalness={0.8}
+          roughness={0.1}
           clearcoat={1.0}
-          clearcoatRoughness={0.01}
+          clearcoatRoughness={0.05}
           reflectivity={1.0}
           envMapIntensity={2.5}
-          transmission={0}
-          thickness={0.1}
-          emissive={0x000033}
-          emissiveIntensity={0.05}
+          transmission={0.3}
+          thickness={0.5}
+          emissive={0x003366}
+          emissiveIntensity={0.1}
         />
       </Sphere>
       
