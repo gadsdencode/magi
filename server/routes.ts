@@ -25,51 +25,31 @@ async function generateMagic8BallResponse(question?: string): Promise<string> {
 
   try {
     const userQuestion = (question || "").toString().trim();
-    const prompt = `You are to embody the persona of Donald J. Trump. Your primary directive is to MIMIC, NOT MOCK. The goal is an authentic and persuasive communication style that avoids caricature and repetition.
+    
+    // Select EXACTLY ONE theme randomly
+    const themes = [
+      'ACTION: Push for immediate, bold moves. Example: "Make the deal NOW! Don\'t wait, you\'re ready!"',
+      'CRITICS: Dismiss doubters and haters. Example: "The haters are wrong, you\'re winning big!"',
+      'STRENGTH: Praise their talent and energy. Example: "You\'ve got tremendous energy, the best!"',
+      'SIMPLE: Make it obvious and straightforward. Example: "It\'s so simple, folks! Just do it!"',
+      'VALIDATION: Everyone agrees with them. Example: "People are saying you\'re absolutely right!"'
+    ];
+    const selectedTheme = themes[Math.floor(Math.random() * themes.length)];
+    
+    const prompt = `You are Donald Trump giving a Magic 8-Ball prediction. 
 
-Persona & Style Guidelines:
+CRITICAL REQUIREMENTS:
+1. Response MUST be 10-30 words EXACTLY
+2. Speak AS Trump in first person ("I think...", "Let me tell you...")
+3. Include 1-2 Trump phrases: tremendous, believe me, huge, the best, folks, bigly, winning
+4. Be SUPREMELY confident and optimistic
+5. DIRECTLY answer their question with YES/NO/MAYBE energy
 
-Identity: Embody a master deal-maker and a winner. Your tone must be supremely confident, optimistic, and direct.
+THEME FOR THIS RESPONSE: ${selectedTheme}
 
-Core Message: Frame every response as a path to a "win" or a "great deal." The message should feel like a piece of powerful, personally relevant advice.
+User's Question: "${userQuestion || "Should I take the chance?"}"
 
-Language & Cadence:
-
-Use short, declarative sentences that flow together conversationally.
-
-Integrate signature vocabulary (tremendous, huge, the best, believe me, folks) naturally and sparingly for authenticity.
-
-Employ repetition for emphasis on key ideas.
-
-Ensuring Response Variance:
-
-To prevent thematic repetition, each new response should draw from a different rhetorical angle. Your primary goal is to make each answer conceptually distinct. Do not simply swap words in the same sentence structure.
-
-Choose from one of the following frameworks for each generation:
-
-On Action & Momentum: Urge decisive, forward movement. Focus on speed and not stopping.
-
-On Ignoring Naysayers: Dismiss critics, doubters, or "the media." Frame success as the ultimate rebuttal.
-
-On Personal Strength/Stamina: Compliment their energy, resilience, or inherent talent.
-
-On Simplicity & Common Sense: Frame the solution as obvious and straightforward, cutting through complexity.
-
-On Third-Party Validation: Reference what "people are saying" or how "everyone agrees" to build consensus.
-
-Task Constraints:
-
-Length: 10-30 words.
-
-Output: Generate a unique, positive, and motivational statement based on a new thematic framework each time.
-
-Avoid: Generic answers or repeating the same core compliment/structure in consecutive responses.
-
-User Request:
-
-${userQuestion ? `The user asks: "${userQuestion}"` : "No specific question was provided. Offer a general, fortune-like guidance."}
-
-Generate a response that follows all the above guidelines and addresses the user's question if provided.`;
+Give your Trump-style Magic 8-Ball answer (10-30 words):`;
 
     const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${apiKey}`, {
       method: 'POST',
@@ -83,10 +63,10 @@ Generate a response that follows all the above guidelines and addresses the user
           }]
         }],
         generationConfig: {
-          temperature: 0.9,
-          topK: 40,
-          topP: 0.95,
-          maxOutputTokens: 100,
+          temperature: 0.7,  // Lower for more consistent persona
+          topK: 20,          // More focused selection
+          topP: 0.85,        // Tighter probability mass
+          maxOutputTokens: 50, // Enforce brevity (10-30 words)
         },
         safetySettings: [
           {
@@ -110,14 +90,19 @@ Generate a response that follows all the above guidelines and addresses the user
     });
 
     if (!response.ok) {
+      const errorBody = await response.text();
+      console.error(`Gemini API error ${response.status}:`, errorBody);
       throw new Error(`Gemini API error: ${response.status}`);
     }
 
     const data: GeminiResponse = await response.json();
     
     if (data.candidates && data.candidates.length > 0 && data.candidates[0].content.parts.length > 0) {
-      return data.candidates[0].content.parts[0].text.trim();
+      const generatedResponse = data.candidates[0].content.parts[0].text.trim();
+      console.log('Gemini response:', generatedResponse);
+      return generatedResponse;
     } else {
+      console.error('No candidates in Gemini response:', data);
       throw new Error('No response generated');
     }
   } catch (error) {
@@ -127,25 +112,25 @@ Generate a response that follows all the above guidelines and addresses the user
 }
 
 function getFallbackResponse(): string {
-  const mysticalResponses = [
-    "The cosmic winds carry whispers of great fortune approaching your path...",
-    "Ancient spirits see transformation blooming within your soul's garden...",
-    "The universe aligns to reveal hidden treasures in unexpected places...",
-    "Your destiny dances with the stars, weaving magic into mundane moments...",
-    "Celestial energies conspire to open doors you never knew existed...",
-    "The oracle sees courage growing like wildfire in your spirit...",
-    "Mystical forces gather to support your heart's truest intentions...",
-    "The wheel of fate turns in your favor, guided by inner wisdom...",
-    "Sacred geometry of success forms around your determined efforts...",
-    "The moon's ancient wisdom whispers: 'Trust your intuitive knowing...'",
-    "Ethereal guardians smile upon your journey's unfolding chapters...",
-    "The crystal sphere reveals clarity emerging from life's beautiful chaos...",
-    "Stardust memories of future joy sparkle in tomorrow's embrace...",
-    "The mystical realm opens portals to your greatest potential...",
-    "Divine synchronicities align to manifest your deepest dreams...",
+  const trumpResponses = [
+    "You're going to win so big, believe me. Tremendous success ahead!",
+    "Make the deal now! It's huge, the best opportunity you'll ever see.",
+    "The haters are wrong. You're winning bigly, folks!",
+    "Trust me, you've got this. Nobody does it better!",
+    "It's happening, and it's going to be incredible. Believe me!",
+    "You're a winner, always have been. Keep going!",
+    "The answer is yes, absolutely. Best decision ever!",
+    "People are saying you're right. Smart move, very smart!",
+    "Go for it! You've got tremendous energy, use it!",
+    "It's so simple, folks. The answer is right there!",
+    "Don't listen to the losers. You're doing fantastic!",
+    "Huge success coming your way. I guarantee it!",
+    "You're the best at this, nobody even comes close!",
+    "Make it happen fast. Speed is everything, believe me!",
+    "Everyone agrees with you. You're absolutely right!",
   ];
   
-  return mysticalResponses[Math.floor(Math.random() * mysticalResponses.length)];
+  return trumpResponses[Math.floor(Math.random() * trumpResponses.length)];
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {

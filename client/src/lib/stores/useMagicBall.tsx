@@ -79,11 +79,11 @@ export const useMagicBall = create<MagicBallState>()(
         console.error('Error fetching prediction:', error);
         // Fallback responses for better UX
         const fallbackResponses = [
-          "The cosmic forces are unclear... Try again.",
-          "The spirits whisper of uncertainty.",
-          "The oracle's vision is clouded...",
-          "Ask again when the stars align.",
-          "The mystical energies are in flux."
+          "Technical difficulties, but you're still winning! Try again.",
+          "Small glitch, happens to everyone. Ask again!",
+          "Connection issue, but the answer is coming. Try once more!",
+          "System's being upgraded to be the best. Ask again!",
+          "Minor setback, major comeback coming. Try again!"
         ];
         const fallback = fallbackResponses[Math.floor(Math.random() * fallbackResponses.length)];
         set({ response: fallback, isLoading: false });

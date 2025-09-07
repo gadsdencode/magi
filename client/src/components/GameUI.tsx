@@ -1,10 +1,11 @@
 import { useState } from 'react';
+import { motion } from 'framer-motion';
 import { useMagicBall } from '../lib/stores/useMagicBall';
 import { useAudio } from '../lib/stores/useAudio';
 import { Button } from './ui/button';
 import { Card, CardContent } from './ui/card';
 import { Input } from './ui/input';
-import { Volume2, VolumeX, RotateCcw, HelpCircle, SendHorizontal } from 'lucide-react';
+import { Volume2, VolumeX, RotateCcw, SendHorizontal } from 'lucide-react';
 
 export default function GameUI() {
   const { isLoading, resetBall, fetchResponse, setQuestion, question, isShaking } = useMagicBall();
@@ -21,21 +22,24 @@ export default function GameUI() {
   return (
     <div className="absolute inset-0 pointer-events-none">
       {/* Top UI Bar */}
-      <div className="absolute top-4 left-4 right-4 flex justify-between items-start pointer-events-auto">
-        <Card className="bg-black/30 backdrop-blur-sm border-cyan-500/30 glow-cyan">
-          <CardContent className="p-3">
-            <h1 className="text-xl font-bold font-orbitron bg-gradient-to-r from-cyan-400 via-blue-300 to-red-400 bg-clip-text text-transparent drop-shadow-[0_0_6px_rgba(0,217,255,0.35)]">
-              Magic 8-Ball Oracle
-            </h1>
-          </CardContent>
-        </Card>
+      <motion.div
+        className="absolute top-4 left-4 right-4 flex justify-between items-start pointer-events-auto"
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, ease: 'easeOut', delay: 0.2 }}
+      >
+        <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.4 }}>
+          <h1 className="text-4xl font-bold text-white tracking-wide drop-shadow-2xl">
+            Magic MAGA Ball
+          </h1>
+        </motion.div>
         
-        <div className="flex gap-2">
+        <motion.div className="flex gap-2" initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.5 }}>
           <Button
             variant="outline"
             size="icon"
             onClick={toggleMute}
-            className="bg-black/30 backdrop-blur-sm border-cyan-500/30 hover:bg-cyan-500/20 text-cyan-400"
+            className="bg-white/10 backdrop-blur-sm border-white/20 hover:bg-white/20 text-white"
           >
             {isMuted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
           </Button>
@@ -44,19 +48,28 @@ export default function GameUI() {
             variant="outline"
             size="icon"
             onClick={resetBall}
-            className="bg-black/30 backdrop-blur-sm border-cyan-500/30 hover:bg-red-500/20 text-cyan-400"
+            className="bg-white/10 backdrop-blur-sm border-white/20 hover:bg-white/20 text-white"
           >
             <RotateCcw className="h-4 w-4" />
           </Button>
-        </div>
-      </div>
+        </motion.div>
+      </motion.div>
 
       {/* Bottom Input / Instructions */}
-      <div className="absolute bottom-24 sm:bottom-12 md:bottom-8 left-1/2 -translate-x-1/2 w-[90vw] max-w-xl pointer-events-auto">
+      <motion.div
+        className="absolute bottom-24 sm:bottom-12 md:bottom-8 left-1/2 -translate-x-1/2 w-[90vw] max-w-xl pointer-events-auto"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.7, ease: 'easeOut', delay: 0.6 }}
+      >
+        <p className="text-white/70 mb-6 text-lg text-center">
+          Ask a question and click the ball for your answer
+        </p>
+        
         <div className="flex items-center gap-2">
           <div className="flex-1">
             <Input
-              placeholder="Type your question for the Oracle..."
+              placeholder="Type your yes or no question..."
               value={localQuestion}
               onChange={(e) => setLocalQuestion(e.target.value)}
               onKeyDown={(e) => {
@@ -69,7 +82,7 @@ export default function GameUI() {
                   submitQuestion();
                 }
               }}
-              className="bg-black/30 border-cyan-500/30 text-cyan-100 placeholder:text-cyan-300/40"
+              className="bg-white/10 backdrop-blur-sm border-white/20 text-white placeholder:text-white/50"
               disabled={isLoading}
             />
           </div>
@@ -77,26 +90,24 @@ export default function GameUI() {
             variant="outline"
             onClick={submitQuestion}
             disabled={isLoading || !localQuestion.trim()}
-            className="bg-black/30 backdrop-blur-sm border-cyan-500/30 hover:bg-cyan-500/20 text-cyan-400"
+            className="bg-white/10 backdrop-blur-sm border-white/20 hover:bg-white/20 text-white"
           >
             <SendHorizontal className="h-4 w-4 mr-1" /> Ask
           </Button>
         </div>
-        <p className="mt-1 sm:mt-2 text-center text-gray-400 text-sm bg-black/30 backdrop-blur-sm px-4 py-2 rounded-lg">
+        
+        <motion.p
+          className="mt-4 text-center text-white/50 text-sm"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 1.0 }}
+        >
           {isLoading 
-            ? 'The cosmos are aligning...'
-            : 'Click the Oracle, press SPACE, or type a question and press Enter.'
+            ? 'Making the best prediction, believe me...'
+            : 'Ask your question and get tremendous advice!'
           }
-        </p>
-      </div>
-
-      {/* Mystical background effects */}
-      <div className="absolute inset-0 pointer-events-none -z-10">
-        <div className="absolute top-10 left-10 w-2 h-2 bg-cyan-400 rounded-full animate-pulse opacity-60"></div>
-        <div className="absolute top-20 right-20 w-1 h-1 bg-red-400 rounded-full animate-pulse opacity-40"></div>
-        <div className="absolute bottom-20 left-20 w-1.5 h-1.5 bg-blue-400 rounded-full animate-pulse opacity-50"></div>
-        <div className="absolute bottom-10 right-10 w-1 h-1 bg-cyan-400 rounded-full animate-pulse opacity-70"></div>
-      </div>
+        </motion.p>
+      </motion.div>
     </div>
   );
 }
