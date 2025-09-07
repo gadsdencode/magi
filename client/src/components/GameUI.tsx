@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { useMagicBall } from '../lib/stores/useMagicBall';
 import { useAudio } from '../lib/stores/useAudio';
@@ -11,6 +11,32 @@ export default function GameUI() {
   const { isLoading, resetBall, fetchResponse, setQuestion, question, isShaking } = useMagicBall();
   const { isMuted, toggleMute } = useAudio();
   const [localQuestion, setLocalQuestion] = useState<string>(question ?? '');
+  const [isKeyboardOpen, setIsKeyboardOpen] = useState(false);
+
+  // Detect virtual keyboard via VisualViewport and input focus
+  useEffect(() => {
+    const vv = (window as any).visualViewport as VisualViewport | undefined;
+    const threshold = 140; // px height change to assume keyboard
+    const onResize = () => {
+      if (!vv) return;
+      const heightLoss = window.innerHeight - vv.height;
+      setIsKeyboardOpen(heightLoss > threshold);
+    };
+    if (vv) {
+      vv.addEventListener('resize', onResize);
+      vv.addEventListener('scroll', onResize);
+      onResize();
+    }
+    const onOrientation = () => onResize();
+    window.addEventListener('orientationchange', onOrientation);
+    return () => {
+      if (vv) {
+        vv.removeEventListener('resize', onResize);
+        vv.removeEventListener('scroll', onResize);
+      }
+      window.removeEventListener('orientationchange', onOrientation);
+    };
+  }, []);
 
   const submitQuestion = async () => {
     const q = localQuestion.trim();
@@ -30,7 +56,7 @@ export default function GameUI() {
       >
         <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.4 }}>
           <h1 className="text-4xl font-bold text-white tracking-wide drop-shadow-2xl">
-            Magic MAGA Ball
+            Magic 47-Ball
           </h1>
         </motion.div>
         
@@ -57,19 +83,23 @@ export default function GameUI() {
 
       {/* Bottom Input / Instructions */}
       <motion.div
-        className="absolute bottom-20 sm:bottom-12 md:bottom-10 inset-x-0 mx-auto w-full max-w-[92vw] sm:max-w-2xl md:max-w-3xl px-4 pointer-events-auto"
+        className={`${isKeyboardOpen
+          ? 'fixed bottom-0 inset-x-0 mx-auto w-full max-w-[100vw] px-3 pb-[calc(env(safe-area-inset-bottom,0px)+10px)] z-50'
+          : 'absolute bottom-20 sm:bottom-12 md:bottom-10 inset-x-0 mx-auto w-full max-w-[92vw] sm:max-w-2xl md:max-w-3xl px-4'} pointer-events-auto`}
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.7, ease: 'easeOut', delay: 0.6 }}
       >
-        <p className="text-white/70 mb-6 text-lg text-center">
-          Ask a question and click the ball for your answer
-        </p>
+        {!isKeyboardOpen && (
+          <p className="text-white/70 mb-6 text-lg text-center">
+            Ask a question and the magic 47-ball shall answer
+          </p>
+        )}
         
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
           <div className="flex-1 min-w-0">
             <Input
-              placeholder="Type your yes or no question..."
+              placeholder="Magic 47-ball awaits your question..."
               value={localQuestion}
               onChange={(e) => setLocalQuestion(e.target.value)}
               onKeyDown={(e) => {
@@ -84,6 +114,8 @@ export default function GameUI() {
               }}
               className="bg-white/10 backdrop-blur-sm border-white/20 text-white placeholder:text-white/50 w-full"
               disabled={isLoading}
+              onFocus={() => setIsKeyboardOpen(true)}
+              onBlur={() => setIsKeyboardOpen(false)}
             />
           </div>
           <Button
@@ -103,8 +135,8 @@ export default function GameUI() {
           transition={{ duration: 0.6, delay: 1.0 }}
         >
           {isLoading 
-            ? 'Making the best prediction, believe me...'
-            : 'Ask your question and get tremendous advice!'
+            ? 'We have the best predictions, don\'t we folks?'
+            : 'People are saying this thing is gonna be yuge - you have to try it!'
           }
         </motion.p>
       </motion.div>
