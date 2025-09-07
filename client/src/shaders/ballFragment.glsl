@@ -33,7 +33,7 @@ void main() {
         // Radius in normal space; 0 at center (front), ~1 at edges
         float r = length(n.xy);
         // Define circular window using the normal length
-        float windowRadius = 0.62; // smaller -> larger visible window on sphere
+        float windowRadius = 0.65; // larger visible window
         float windowMask = 1.0 - smoothstep(windowRadius, windowRadius + 0.04, r);
         // Fade out if not facing camera to avoid back/edge artifacts
         float front = smoothstep(0.0, 0.25, n.z);
@@ -41,7 +41,7 @@ void main() {
 
         // Build UV for text from normal.xy mapped to [0,1]
         // Scale controls how much of the texture appears in the window
-        float textScale = 0.85; // lower shows more text, higher zooms in
+        float textScale = 0.9; // increase apparent text size (zoom in)
         vec2 local = clamp(n.xy / windowRadius / textScale, -1.0, 1.0);
         vec2 textUv = local * 0.5 + 0.5;
 

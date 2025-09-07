@@ -10,7 +10,7 @@ type ThreeBallProps = {
   isAnswerVisible: boolean;
 };
 
-function createTextCanvas(text: string, dimension = 512): HTMLCanvasElement {
+function createTextCanvas(text: string, dimension = 1536): HTMLCanvasElement {
   const canvas = document.createElement("canvas");
   canvas.width = dimension;
   canvas.height = dimension;
@@ -24,7 +24,7 @@ function createTextCanvas(text: string, dimension = 512): HTMLCanvasElement {
   // Text should fill most of the canvas since the window will show a portion
   const padding = dimension * 0.1;
   const maxWidth = dimension - padding * 2;
-  let fontSize = Math.floor(dimension * 0.08);
+  let fontSize = Math.floor(dimension * 0.11);
   
   // Configure text style
   ctx.fillStyle = "#FFFFFF";
@@ -38,7 +38,7 @@ function createTextCanvas(text: string, dimension = 512): HTMLCanvasElement {
   const measure = (t: string) => ctx.measureText(t).width;
 
   // Word wrap with proper font
-  for (; fontSize >= Math.floor(dimension * 0.04); fontSize -= 2) {
+  for (; fontSize >= Math.floor(dimension * 0.06); fontSize -= 2) {
     ctx.font = `bold ${fontSize}px Arial, sans-serif`;
     lines.length = 0;
     current = "";
