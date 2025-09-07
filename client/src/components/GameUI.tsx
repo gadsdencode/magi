@@ -57,7 +57,7 @@ export default function GameUI() {
 
       {/* Bottom Input / Instructions */}
       <motion.div
-        className="absolute bottom-24 sm:bottom-12 md:bottom-8 left-1/2 -translate-x-1/2 w-[90vw] max-w-xl pointer-events-auto"
+        className="absolute bottom-20 sm:bottom-12 md:bottom-10 inset-x-0 mx-auto w-full max-w-[92vw] sm:max-w-2xl md:max-w-3xl px-4 pointer-events-auto"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.7, ease: 'easeOut', delay: 0.6 }}
@@ -66,8 +66,8 @@ export default function GameUI() {
           Ask a question and click the ball for your answer
         </p>
         
-        <div className="flex items-center gap-2">
-          <div className="flex-1">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+          <div className="flex-1 min-w-0">
             <Input
               placeholder="Type your yes or no question..."
               value={localQuestion}
@@ -82,7 +82,7 @@ export default function GameUI() {
                   submitQuestion();
                 }
               }}
-              className="bg-white/10 backdrop-blur-sm border-white/20 text-white placeholder:text-white/50"
+              className="bg-white/10 backdrop-blur-sm border-white/20 text-white placeholder:text-white/50 w-full"
               disabled={isLoading}
             />
           </div>
@@ -90,7 +90,7 @@ export default function GameUI() {
             variant="outline"
             onClick={submitQuestion}
             disabled={isLoading || !localQuestion.trim()}
-            className="bg-white/10 backdrop-blur-sm border-white/20 hover:bg-white/20 text-white"
+            className="bg-white/10 backdrop-blur-sm border-white/20 hover:bg-white/20 text-white sm:w-auto w-full"
           >
             <SendHorizontal className="h-4 w-4 mr-1" /> Ask
           </Button>
